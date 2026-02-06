@@ -44,9 +44,12 @@ interface Mesaj {
 }
 
 export default function ChatScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const params = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const flatListRef = useRef<FlatList>(null);
+  
+  // Ensure id is a string (not array)
+  const kisiId = Array.isArray(params.id) ? params.id[0] : params.id;
 
   const [kisi, setKisi] = useState<Kisi | null>(null);
   const [mesajlar, setMesajlar] = useState<Mesaj[]>([]);
@@ -58,19 +61,24 @@ export default function ChatScreen() {
   const [isRecording, setIsRecording] = useState(false);
 
   useEffect(() => {
-    fetchData();
-  }, [id]);
+    if (kisiId) {
+      fetchData();
+    }
+  }, [kisiId]);
 
   const fetchData = async () => {
+    if (!kisiId) return;
     try {
+      console.log('Fetching data for kisiId:', kisiId);
+      console.log('Backend URL:', BACKEND_URL);
       const [kisiRes, mesajlarRes] = await Promise.all([
-        axios.get(`${BACKEND_URL}/api/kisiler/${id}`),
-        axios.get(`${BACKEND_URL}/api/mesajlar/${id}`),
+        axios.get(`${BACKEND_URL}/api/kisiler/${kisiId}`),
+        axios.get(`${BACKEND_URL}/api/mesajlar/${kisiId}`),
       ]);
       setKisi(kisiRes.data);
       setMesajlar(mesajlarRes.data);
-    } catch (error) {
-      console.error('Veri yükleme hatası:', error);
+    } catch (error: any) {
+      console.error('Veri yükleme hatası:', error?.response?.status, error?.message);
       Alert.alert('Hata', 'Veriler yüklenemedi');
     } finally {
       setLoading(false);
