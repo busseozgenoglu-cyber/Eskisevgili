@@ -92,7 +92,7 @@ export default function ChatScreen() {
   };
 
   const sendMessage = async () => {
-    if (!inputText.trim() || sending) return;
+    if (!inputText.trim() || sending || !kisiId) return;
 
     const mesaj = inputText.trim();
     setInputText('');
@@ -103,7 +103,7 @@ export default function ChatScreen() {
     // Optimistic update
     const tempMesaj: Mesaj = {
       id: `temp-${Date.now()}`,
-      kisi_id: id!,
+      kisi_id: kisiId,
       icerik: mesaj,
       kullanicidan_mi: true,
       zaman: new Date().toISOString(),
@@ -112,23 +112,24 @@ export default function ChatScreen() {
     scrollToBottom();
 
     try {
+      console.log('Sending chat message to:', `${BACKEND_URL}/api/chat`);
       const response = await axios.post(`${BACKEND_URL}/api/chat`, {
-        kisi_id: id,
+        kisi_id: kisiId,
         mesaj: mesaj,
       });
 
       // Add AI response
       const aiMesaj: Mesaj = {
         id: response.data.mesaj_id,
-        kisi_id: id!,
+        kisi_id: kisiId,
         icerik: response.data.yanit,
         kullanicidan_mi: false,
         zaman: new Date().toISOString(),
       };
       setMesajlar(prev => [...prev, aiMesaj]);
       scrollToBottom();
-    } catch (error) {
-      console.error('Mesaj gönderme hatası:', error);
+    } catch (error: any) {
+      console.error('Mesaj gönderme hatası:', error?.response?.status, error?.message);
       Alert.alert('Hata', 'Mesaj gönderilemedi');
     } finally {
       setSending(false);
