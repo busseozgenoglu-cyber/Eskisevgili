@@ -148,7 +148,7 @@ export default function ChatScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await axios.delete(`${BACKEND_URL}/api/mesajlar/${id}`);
+              await axios.delete(`${BACKEND_URL}/api/mesajlar/${kisiId}`);
               setMesajlar([]);
             } catch (error) {
               Alert.alert('Hata', 'Sohbet temizlenemedi');
