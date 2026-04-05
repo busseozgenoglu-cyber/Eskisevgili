@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Animated,
   Dimensions,
+  TouchableOpacity,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -12,33 +13,24 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
 
-export default function SplashScreen() {
+export default function OnboardingScreen() {
   const router = useRouter();
   const [fadeAnim] = useState(new Animated.Value(0));
-  const [scaleAnim] = useState(new Animated.Value(0.5));
+  const [slideAnim] = useState(new Animated.Value(40));
 
   useEffect(() => {
-    // Start animations
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 1000,
+        duration: 900,
         useNativeDriver: true,
       }),
-      Animated.spring(scaleAnim, {
-        toValue: 1,
-        friction: 3,
-        tension: 40,
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 900,
         useNativeDriver: true,
       }),
     ]).start();
-
-    // Navigate to home after delay
-    const timer = setTimeout(() => {
-      router.replace('/home');
-    }, 2500);
-
-    return () => clearTimeout(timer);
   }, []);
 
   return (
@@ -51,12 +43,10 @@ export default function SplashScreen() {
       <Animated.View
         style={[
           styles.content,
-          {
-            opacity: fadeAnim,
-            transform: [{ scale: scaleAnim }],
-          },
+          { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
         ]}
       >
+        {/* Logo */}
         <View style={styles.logoContainer}>
           <LinearGradient
             colors={['#6C63FF', '#9D4EDD']}
@@ -64,20 +54,54 @@ export default function SplashScreen() {
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
           >
-            <Ionicons name="heart" size={60} color="#fff" />
+            <Ionicons name="heart" size={52} color="#fff" />
           </LinearGradient>
         </View>
 
-        <Text style={styles.title}>Echo</Text>
-        <Text style={styles.subtitle}>Anılarınla Sohbet Et</Text>
+        {/* Başlık */}
+        <Text style={styles.title}>Eski Sevgili</Text>
+        <Text style={styles.tagline}>Onunla bir daha konuşabilseydin…</Text>
 
-        <View style={styles.loader}>
-          <View style={styles.loaderDot} />
-          <View style={[styles.loaderDot, styles.loaderDotDelay1]} />
-          <View style={[styles.loaderDot, styles.loaderDotDelay2]} />
+        {/* Özellikler */}
+        <View style={styles.features}>
+          <FeatureRow icon="sparkles" text="Onu tam olarak sen tanımlıyorsun" />
+          <FeatureRow icon="chatbubble-ellipses" text="O nasıl konuşurdu, o şekilde yanıt veriyor" />
+          <FeatureRow icon="lock-closed" text="Sadece seninle, tamamen özel" />
         </View>
+
+        {/* CTA */}
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.replace('/anket')}
+          activeOpacity={0.85}
+        >
+          <LinearGradient
+            colors={['#6C63FF', '#9D4EDD']}
+            style={styles.buttonGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+          >
+            <Text style={styles.buttonText}>Eski Sevgilini Oluştur</Text>
+            <Ionicons name="arrow-forward" size={20} color="#fff" />
+          </LinearGradient>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => router.replace('/home')} style={styles.skipButton}>
+          <Text style={styles.skipText}>Zaten bir anım var →</Text>
+        </TouchableOpacity>
       </Animated.View>
     </LinearGradient>
+  );
+}
+
+function FeatureRow({ icon, text }: { icon: any; text: string }) {
+  return (
+    <View style={styles.featureRow}>
+      <View style={styles.featureIcon}>
+        <Ionicons name={icon} size={18} color="#9D4EDD" />
+      </View>
+      <Text style={styles.featureText}>{text}</Text>
+    </View>
   );
 }
 
@@ -89,9 +113,11 @@ const styles = StyleSheet.create({
   },
   content: {
     alignItems: 'center',
+    paddingHorizontal: 30,
+    width: '100%',
   },
   logoContainer: {
-    marginBottom: 30,
+    marginBottom: 28,
     shadowColor: '#6C63FF',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.5,
@@ -99,39 +125,80 @@ const styles = StyleSheet.create({
     elevation: 20,
   },
   logoGradient: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: 110,
+    height: 110,
+    borderRadius: 55,
     justifyContent: 'center',
     alignItems: 'center',
   },
   title: {
-    fontSize: 42,
+    fontSize: 38,
     fontWeight: 'bold',
     color: '#fff',
-    letterSpacing: 2,
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: 'rgba(255,255,255,0.7)',
     letterSpacing: 1,
-    marginBottom: 50,
+    marginBottom: 10,
   },
-  loader: {
+  tagline: {
+    fontSize: 16,
+    color: 'rgba(255,255,255,0.6)',
+    textAlign: 'center',
+    marginBottom: 48,
+    lineHeight: 24,
+  },
+  features: {
+    width: '100%',
+    marginBottom: 48,
+    gap: 16,
+  },
+  featureRow: {
     flexDirection: 'row',
-    gap: 8,
+    alignItems: 'center',
+    gap: 14,
   },
-  loaderDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(255,255,255,0.5)',
+  featureIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(108,99,255,0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  loaderDotDelay1: {
-    opacity: 0.7,
+  featureText: {
+    flex: 1,
+    fontSize: 15,
+    color: 'rgba(255,255,255,0.85)',
+    lineHeight: 22,
   },
-  loaderDotDelay2: {
-    opacity: 0.4,
+  button: {
+    width: '100%',
+    borderRadius: 30,
+    overflow: 'hidden',
+    shadowColor: '#6C63FF',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 15,
+    elevation: 10,
+    marginBottom: 20,
+  },
+  buttonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 18,
+    paddingHorizontal: 30,
+    gap: 10,
+  },
+  buttonText: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#fff',
+    letterSpacing: 0.3,
+  },
+  skipButton: {
+    paddingVertical: 10,
+  },
+  skipText: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.35)',
   },
 });

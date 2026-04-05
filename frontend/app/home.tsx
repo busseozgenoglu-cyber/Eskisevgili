@@ -169,8 +169,8 @@ export default function HomeScreen() {
             <Ionicons name="heart" size={24} color="#fff" />
           </LinearGradient>
           <View style={styles.headerText}>
-            <Text style={styles.headerTitle}>Echo</Text>
-            <Text style={styles.headerSubtitle}>Anılarınla Sohbet Et</Text>
+            <Text style={styles.headerTitle}>Sanal Eski Sevgili</Text>
+            <Text style={styles.headerSubtitle}>Onunla bir daha konuş</Text>
           </View>
         </View>
 

@@ -209,7 +209,7 @@ def sistem_promptu_olustur(kisi: dict) -> str:
 
 @api_router.get("/")
 async def root():
-    return {"message": "Echo - Anı Sohbet API"}
+    return {"message": "Sanal Eski Sevgili API"}
 
 @api_router.get("/health")
 async def health_check():
