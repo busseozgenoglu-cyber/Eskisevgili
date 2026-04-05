@@ -310,7 +310,8 @@ async def chat(request: ChatRequest):
         return ChatResponse(yanit=yanit, mesaj_id=ai_mesaji.id)
         
     except Exception as e:
-        logger.error(f"Chat hatası: {str(e)}")
+        import traceback
+        logger.error(f"Chat hatası: {str(e)}\n{traceback.format_exc()}")
         # Yedek yanıt
         yedek_yanit = yedek_yanit_uret(kisi, request.mesaj) if kisi else "Şu an yanıt veremiyorum."
         
