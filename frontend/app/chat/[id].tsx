@@ -12,6 +12,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Keyboard,
+  Modal,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,6 +22,8 @@ import axios from 'axios';
 import { format, isToday, isYesterday, differenceInMinutes } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Audio } from 'expo-av';
+import { useSubscription } from '../../hooks/useSubscription';
+import PaywallScreen from '../paywall';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -59,6 +62,16 @@ export default function ChatScreen() {
   const [typing, setTyping] = useState(false);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const {
+    isPremium,
+    freeMessagesUsed,
+    showPaywall,
+    FREE_MSG_LIMIT,
+    canSendMessage,
+    incrementMessageCount,
+    dismissPaywall,
+    onPurchased,
+  } = useSubscription();
 
   useEffect(() => {
     if (kisiId) {
@@ -93,6 +106,12 @@ export default function ChatScreen() {
 
   const sendMessage = async () => {
     if (!inputText.trim() || sending || !kisiId) return;
+
+    // Show paywall if not premium (safety net - paywall should already show from anket)
+    if (!isPremium && showPaywall) return;
+    if (!isPremium) {
+      await incrementMessageCount(); // still track for analytics
+    }
 
     const mesaj = inputText.trim();
     setInputText('');
@@ -271,6 +290,11 @@ export default function ChatScreen() {
 
   return (
     <LinearGradient colors={['#0A0A0F', '#1A1A2E']} style={styles.container}>
+      {/* Paywall Modal */}
+      <Modal visible={showPaywall} animationType="slide" presentationStyle="fullScreen">
+        <PaywallScreen onClose={dismissPaywall} onPurchased={onPurchased} />
+      </Modal>
+
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         {/* Header */}
         <View style={styles.header}>
@@ -323,6 +347,16 @@ export default function ChatScreen() {
             onContentSizeChange={scrollToBottom}
             showsVerticalScrollIndicator={false}
           />
+
+          {/* Free message counter */}
+          {!isPremium && (
+            <TouchableOpacity onPress={() => {}} style={styles.freeCounter}>
+              <Text style={styles.freeCounterText}>
+                {Math.max(0, FREE_MSG_LIMIT - freeMessagesUsed)} ücretsiz mesaj kaldı
+              </Text>
+              <Text style={styles.freeCounterCta}> · Premium'a geç →</Text>
+            </TouchableOpacity>
+          )}
 
           {/* Input Area */}
           <View style={styles.inputArea}>
@@ -584,5 +618,20 @@ const styles = StyleSheet.create({
     height: 50,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  freeCounter: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    paddingVertical: 6,
+    backgroundColor: 'rgba(108,99,255,0.1)',
+  },
+  freeCounterText: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.5)',
+  },
+  freeCounterCta: {
+    fontSize: 12,
+    color: '#9D4EDD',
+    fontWeight: '600',
   },
 });

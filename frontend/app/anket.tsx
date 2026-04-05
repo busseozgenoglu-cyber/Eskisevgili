@@ -12,6 +12,7 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  Modal,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,7 +20,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SORULAR, Soru } from '../constants/sorular';
+import PaywallScreen from './paywall';
 
 const { width } = Dimensions.get('window');
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
@@ -31,6 +34,8 @@ export default function AnketScreen() {
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(false);
   const [profilFoto, setProfilFoto] = useState<string | null>(null);
+  const [showPaywall, setShowPaywall] = useState(false);
+  const [pendingChatId, setPendingChatId] = useState<string | null>(null);
 
   const currentQuestion = SORULAR[currentPage];
   const progress = (currentPage + 1) / SORULAR.length;
@@ -96,17 +101,16 @@ export default function AnketScreen() {
       }
 
       const response = await axios.post(`${BACKEND_URL}/api/kisiler`, formattedAnswers);
-      
-      Alert.alert(
-        'Harika!',
-        `${response.data.isim} ile sohbet etmeye hazırsın`,
-        [
-          {
-            text: 'Sohbete Başla',
-            onPress: () => router.replace(`/chat/${response.data.id}`),
-          },
-        ]
-      );
+      const chatId = response.data.id;
+
+      // Check if user is already premium
+      const isPremium = (await AsyncStorage.getItem('is_premium')) === 'true';
+      if (isPremium) {
+        router.replace(`/chat/${chatId}`);
+      } else {
+        setPendingChatId(chatId);
+        setShowPaywall(true);
+      }
     } catch (error) {
       console.error('Kaydetme hatası:', error);
       Alert.alert('Hata', 'Kayıt sırasında bir hata oluştu');
@@ -219,7 +223,27 @@ export default function AnketScreen() {
     }
   };
 
+  const handlePurchased = async () => {
+    await AsyncStorage.setItem('is_premium', 'true');
+    setShowPaywall(false);
+    if (pendingChatId) {
+      router.replace(`/chat/${pendingChatId}`);
+    }
+  };
+
+  const handlePaywallClose = () => {
+    setShowPaywall(false);
+    // Allow limited access even without subscription
+    if (pendingChatId) {
+      router.replace(`/chat/${pendingChatId}`);
+    }
+  };
+
   return (
+    <>
+      <Modal visible={showPaywall} animationType="slide" presentationStyle="fullScreen">
+        <PaywallScreen onClose={handlePaywallClose} onPurchased={handlePurchased} />
+      </Modal>
     <LinearGradient colors={['#0A0A0F', '#1A1A2E']} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingView
@@ -323,6 +347,7 @@ export default function AnketScreen() {
         </KeyboardAvoidingView>
       </SafeAreaView>
     </LinearGradient>
+    </>
   );
 }
 

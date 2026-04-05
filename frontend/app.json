@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Echo - Anı Sohbet",
-    "slug": "echo-ani-sohbet",
+    "name": "sanaleskisevgili",
+    "slug": "sanaleskisevgili",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -10,7 +10,10 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.echo.anisohbet",
+      "bundleIdentifier": "com.sanaleskisevgili.app",
+      "entitlements": {
+        "com.apple.developer.in-app-payments": ["com.sanaleskisevgili.app.premium.monthly"]
+      },
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Profil fotoğrafı seçmek için galeri erişimi",
         "NSCameraUsageDescription": "Profil fotoğrafı çekmek için kamera erişimi",

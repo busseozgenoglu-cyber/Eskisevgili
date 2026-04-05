@@ -87,7 +87,7 @@ export default function OnboardingScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => router.replace('/home')} style={styles.skipButton}>
-          <Text style={styles.skipText}>Zaten bir anım var →</Text>
+          <Text style={styles.skipText}>Sanal eski sevgilinle konuşmaya devam et →</Text>
         </TouchableOpacity>
       </Animated.View>
     </LinearGradient>

@@ -1,0 +1,39 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Upload metadata and submit for review"
+  lane :submit do |options|
+    api_key = app_store_connect_api_key(
+      key_id: options[:key_id],
+      issuer_id: options[:issuer_id],
+      key_filepath: options[:key_path],
+      duration: 1200,
+      in_house: false
+    )
+
+    deliver(
+      api_key: api_key,
+      app_identifier: "com.sanaleskisevgili.app",
+      submit_for_review: true,
+      automatic_release: false,
+      force: true,
+      skip_binary_upload: true,
+      build_number: "1",
+      app_version: "1.0.0",
+      metadata_path: "./fastlane/metadata",
+      screenshots_path: "./fastlane/screenshots",
+      skip_app_version_update: false,
+      submission_information: {
+        add_id_info_uses_idfa: false,
+        add_id_info_serves_ads: false,
+        add_id_info_tracks_action: false,
+        add_id_info_tracks_install: false,
+        add_id_info_limits_tracking: false,
+        export_compliance_uses_encryption: false,
+        export_compliance_is_exempt: true,
+        content_rights_contains_third_party_content: false,
+        content_rights_has_rights: true,
+      }
+    )
+  end
+end

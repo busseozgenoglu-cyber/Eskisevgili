@@ -14,7 +14,7 @@
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://YOUR_RAILWAY_URL"
+        "EXPO_PUBLIC_BACKEND_URL": "https://eskisevgili-production.up.railway.app"
       }
     },
     "production": {
@@ -26,7 +26,7 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://YOUR_RAILWAY_URL"
+        "EXPO_PUBLIC_BACKEND_URL": "https://eskisevgili-production.up.railway.app"
       }
     }
   },
@@ -34,8 +34,8 @@
     "production": {
       "ios": {
         "appleId": "YOUR_APPLE_ID@example.com",
-        "ascAppId": "YOUR_APP_STORE_CONNECT_APP_ID",
-        "appleTeamId": "YOUR_APPLE_TEAM_ID"
+        "ascAppId": "6761690112",
+        "appleTeamId": "9XXS5A86HT"
       },
       "android": {
         "serviceAccountKeyPath": "./google-services.json",
