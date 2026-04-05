@@ -2,6 +2,7 @@ from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
+from openai import AsyncOpenAI
 import os
 import logging
 from pathlib import Path
@@ -10,7 +11,6 @@ from typing import List, Optional, Dict, Any
 import uuid
 from datetime import datetime
 import base64
-from emergentintegrations.llm.chat import LlmChat, UserMessage
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -20,8 +20,8 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# LLM API Key
-EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
+# OpenAI client
+openai_client = AsyncOpenAI(api_key=os.environ.get('OPENAI_API_KEY', ''))
 
 # Create the main app without a prefix
 app = FastAPI()
@@ -280,23 +280,22 @@ async def chat(request: ChatRequest):
         
         # Sistem promptunu oluştur
         sistem_promptu = sistem_promptu_olustur(kisi)
-        
-        # LLM Chat oluştur
-        chat_instance = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
-            session_id=f"echo-{request.kisi_id}",
-            system_message=sistem_promptu
-        ).with_model("openai", "gpt-5.2")
-        
-        # Mesaj geçmişini ekle
-        for mesaj in son_mesajlar[:-1]:  # Son mesaj hariç
-            if mesaj.get('kullanicidan_mi'):
-                await chat_instance.send_message(UserMessage(text=mesaj['icerik']))
-            # AI mesajları otomatik olarak session'da
-        
-        # Yeni mesajı gönder ve yanıt al
-        user_message = UserMessage(text=request.mesaj)
-        yanit = await chat_instance.send_message(user_message)
+
+        # Mesaj geçmişini oluştur
+        messages = [{"role": "system", "content": sistem_promptu}]
+        for mesaj in son_mesajlar[:-1]:  # Son mesaj hariç (zaten request.mesaj olarak eklenecek)
+            role = "user" if mesaj.get('kullanicidan_mi') else "assistant"
+            messages.append({"role": role, "content": mesaj['icerik']})
+        messages.append({"role": "user", "content": request.mesaj})
+
+        # OpenAI API çağrısı
+        completion = await openai_client.chat.completions.create(
+            model=os.environ.get('OPENAI_MODEL', 'gpt-4o'),
+            messages=messages,
+            max_tokens=500,
+            temperature=0.9,
+        )
+        yanit = completion.choices[0].message.content
         
         # AI mesajını kaydet
         ai_mesaji = Mesaj(
