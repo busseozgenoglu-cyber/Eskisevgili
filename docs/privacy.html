@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sanal Eski Sevgili - Gizlilik Politikası</title>
+  <title>Sanal Eski Sevgili – Gizlilik Politikası & Kullanım Şartları</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -13,64 +13,230 @@
       line-height: 1.7;
       padding: 40px 20px;
     }
-    .container { max-width: 700px; margin: 0 auto; }
-    h1 { font-size: 28px; color: #fff; margin-bottom: 8px; }
-    .subtitle { color: #9D4EDD; font-size: 14px; margin-bottom: 40px; }
-    h2 { font-size: 18px; color: #c084fc; margin: 32px 0 12px; }
-    p { color: #b0b0c0; margin-bottom: 12px; }
-    ul { color: #b0b0c0; padding-left: 20px; margin-bottom: 12px; }
-    li { margin-bottom: 6px; }
-    .highlight { background: #1a1a2e; border-left: 3px solid #6C63FF; padding: 12px 16px; border-radius: 4px; margin: 16px 0; }
-    .contact { margin-top: 40px; padding: 20px; background: #1a1a2e; border-radius: 12px; }
+    .container { max-width: 720px; margin: 0 auto; }
+    .lang-switch { display: flex; gap: 12px; margin-bottom: 40px; }
+    .lang-btn {
+      padding: 8px 20px; border-radius: 20px; border: 1px solid #6C63FF;
+      background: transparent; color: #9D4EDD; cursor: pointer; font-size: 14px;
+      transition: all .2s;
+    }
+    .lang-btn.active { background: #6C63FF; color: #fff; }
+    .section { display: none; }
+    .section.active { display: block; }
+    .app-title { font-size: 30px; color: #fff; margin-bottom: 4px; }
+    .app-sub { color: #9D4EDD; font-size: 14px; margin-bottom: 32px; }
+    h1 { font-size: 22px; color: #fff; margin: 40px 0 4px; border-top: 1px solid #2a1a4e; padding-top: 40px; }
+    h1:first-child { border-top: none; padding-top: 0; }
+    h2 { font-size: 16px; color: #c084fc; margin: 24px 0 10px; }
+    p { color: #b0b0c0; margin-bottom: 10px; }
+    ul { color: #b0b0c0; padding-left: 20px; margin-bottom: 10px; }
+    li { margin-bottom: 5px; }
+    .highlight {
+      background: #1a1a2e; border-left: 3px solid #6C63FF;
+      padding: 12px 16px; border-radius: 4px; margin: 16px 0;
+      color: #b0b0c0;
+    }
+    .contact {
+      margin-top: 32px; padding: 20px; background: #1a1a2e;
+      border-radius: 12px;
+    }
+    .contact a { color: #9D4EDD; text-decoration: none; }
     .updated { font-size: 12px; color: #555; margin-top: 40px; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>💔 Sanal Eski Sevgili</h1>
-    <p class="subtitle">Gizlilik Politikası</p>
+    <div class="app-title">💔 Sanal Eski Sevgili</div>
+    <div class="app-sub">Politikalar / Policies</div>
 
-    <div class="highlight">
-      <p>Bu uygulama kullanıcıların gizliliğine saygı duyar. Kişisel verilerinizi üçüncü taraflarla paylaşmıyoruz.</p>
+    <div class="lang-switch">
+      <button class="lang-btn active" onclick="switchLang('tr')">🇹🇷 Türkçe</button>
+      <button class="lang-btn" onclick="switchLang('en')">🇬🇧 English</button>
     </div>
 
-    <h2>Topladığımız Bilgiler</h2>
-    <p>Uygulama yalnızca siz girene kadar aşağıdaki bilgileri toplar:</p>
-    <ul>
-      <li>Oluşturduğunuz profil bilgileri (isim, özellikler, anılar)</li>
-      <li>Uygulama içi sohbet geçmişi</li>
-      <li>İsteğe bağlı profil fotoğrafı</li>
-    </ul>
+    <!-- TURKISH -->
+    <div class="section active" id="section-tr">
 
-    <h2>Bilgilerin Kullanımı</h2>
-    <p>Toplanan bilgiler yalnızca şu amaçlarla kullanılır:</p>
-    <ul>
-      <li>Kişiselleştirilmiş yapay zeka sohbet deneyimi oluşturmak</li>
-      <li>Profil ve sohbet geçmişini saklamak</li>
-    </ul>
+      <h1>🔐 Gizlilik Politikası</h1>
+      <p class="updated">Son Güncelleme: 2026</p>
 
-    <h2>Veri Depolama</h2>
-    <p>Verileriniz şifreli bulut veritabanında (MongoDB Atlas) güvenli şekilde saklanır. Hesabınızı sildiğinizde tüm verileriniz kalıcı olarak silinir.</p>
+      <div class="highlight">
+        "Sanal Eski Sevgili" uygulaması olarak kullanıcı gizliliğini ciddiye alıyoruz. Bu politika, uygulamayı kullanırken hangi verilerin toplandığını ve nasıl kullanıldığını açıklar.
+      </div>
 
-    <h2>Yapay Zeka ve OpenAI</h2>
-    <p>Sohbet yanıtları OpenAI API aracılığıyla oluşturulmaktadır. Sohbet içerikleri OpenAI'ın gizlilik politikasına tabidir. Uygulama içinde girdiğiniz kişisel detaylar (isim, anılar vb.) OpenAI'a iletilmekte ve yapay zeka yanıtı üretmek için kullanılmaktadır.</p>
+      <h2>1. Toplanan Veriler</h2>
+      <p>Uygulama aşağıdaki verileri toplayabilir:</p>
+      <ul>
+        <li>Kullanıcı tarafından girilen sohbet içerikleri</li>
+        <li>Uygulama kullanım verileri (anonim)</li>
+        <li>Cihaz bilgileri (model, işletim sistemi)</li>
+      </ul>
+      <p><strong>Önemli:</strong> Uygulama hassas kişisel verileri (kimlik numarası, adres vb.) talep etmez.</p>
 
-    <h2>Üçüncü Taraf Paylaşımı</h2>
-    <p>Kişisel verileriniz pazarlama veya reklam amacıyla hiçbir üçüncü tarafla paylaşılmaz.</p>
+      <h2>2. Veri Kullanımı</h2>
+      <p>Toplanan veriler şu amaçlarla kullanılır:</p>
+      <ul>
+        <li>Yapay zeka yanıtlarını oluşturmak</li>
+        <li>Uygulama performansını iyileştirmek</li>
+        <li>Hataları tespit etmek</li>
+      </ul>
 
-    <h2>Çocukların Gizliliği</h2>
-    <p>Bu uygulama 17 yaş ve üzeri kullanıcılar için tasarlanmıştır. 17 yaş altı kullanıcıların veri toplamamaktayız.</p>
+      <h2>3. Yapay Zeka Uyarısı</h2>
+      <p>Bu uygulamada kullanılan sohbet sistemi gerçek bir kişi değildir.</p>
+      <ul>
+        <li>Verilen yanıtlar tamamen yapay zeka tarafından oluşturulur</li>
+        <li>Gerçek bir eski sevgiliyi temsil etmez</li>
+        <li>Duygusal veya psikolojik destek amacıyla kullanılmamalıdır</li>
+      </ul>
 
-    <h2>Verilerinizi Silme</h2>
-    <p>Uygulama içinden profilleri ve sohbet geçmişini dilediğiniz zaman silebilirsiniz. Tüm hesap verilerinizin silinmesi için bizimle iletişime geçin.</p>
+      <h2>4. Veri Paylaşımı</h2>
+      <p>Kullanıcı verileri:</p>
+      <ul>
+        <li>Üçüncü kişilerle satılmaz</li>
+        <li>Reklam amaçlı paylaşılmaz</li>
+        <li>Yasal zorunluluk durumunda paylaşılabilir</li>
+      </ul>
 
-    <h2>İletişim</h2>
-    <div class="contact">
-      <p>Gizlilik politikasıyla ilgili sorularınız için:</p>
-      <p style="color:#9D4EDD; margin-top:8px;">ozgenoglubuse@gmail.com</p>
+      <h2>5. Veri Güvenliği</h2>
+      <p>Veriler güvenli sunucularda saklanır ve korunur. Ancak hiçbir sistem %100 güvenli değildir.</p>
+
+      <h2>6. Kullanıcı Hakları</h2>
+      <p>Kullanıcılar:</p>
+      <ul>
+        <li>Verilerinin silinmesini talep edebilir</li>
+        <li>Hesabını istediği zaman silebilir</li>
+      </ul>
+
+      <h2>7. İletişim</h2>
+      <div class="contact">
+        <p>Sorular için:</p>
+        <p style="margin-top:8px;"><a href="mailto:support@sanalexsevgili.com">📧 support@sanalexsevgili.com</a></p>
+      </div>
+
+      <h1>📜 Kullanım Şartları</h1>
+
+      <h2>1. Hizmet Tanımı</h2>
+      <p>"Sanal Eski Sevgili", yapay zeka destekli bir sohbet uygulamasıdır.</p>
+
+      <h2>2. Sorumluluk Reddi</h2>
+      <ul>
+        <li>Uygulama gerçek kişilerle bağlantılı değildir</li>
+        <li>Verilen yanıtlar tavsiye niteliği taşımaz</li>
+        <li>Kullanıcıların duygusal kararlarından sorumlu değildir</li>
+      </ul>
+
+      <h2>3. Yaş Sınırı</h2>
+      <p>Uygulama 18 yaş ve üzeri kullanıcılar içindir.</p>
+
+      <h2>4. Abonelik ve Ödeme</h2>
+      <ul>
+        <li>Bazı özellikler ücretlidir</li>
+        <li>Abonelik otomatik yenilenir</li>
+        <li>Kullanıcı istediği zaman iptal edebilir</li>
+      </ul>
+
+      <h2>5. Yasaklı Kullanım</h2>
+      <p>Kullanıcılar:</p>
+      <ul>
+        <li>Uygulamayı kötüye kullanamaz</li>
+        <li>Zararlı içerik oluşturamaz</li>
+      </ul>
+
     </div>
 
-    <p class="updated">Son güncelleme: Nisan 2026</p>
+    <!-- ENGLISH -->
+    <div class="section" id="section-en">
+
+      <h1>🔐 Privacy Policy</h1>
+      <p class="updated">Last Updated: 2026</p>
+
+      <div class="highlight">
+        "Sanal Ex Lover" respects your privacy. This policy explains how we collect and use your data.
+      </div>
+
+      <h2>1. Data We Collect</h2>
+      <p>We may collect:</p>
+      <ul>
+        <li>Chat messages entered by users</li>
+        <li>App usage data (anonymous)</li>
+        <li>Device information</li>
+      </ul>
+      <p>We do <strong>NOT</strong> collect sensitive personal data.</p>
+
+      <h2>2. How We Use Data</h2>
+      <p>We use data to:</p>
+      <ul>
+        <li>Generate AI responses</li>
+        <li>Improve the app</li>
+        <li>Fix bugs</li>
+      </ul>
+
+      <h2>3. AI Disclaimer</h2>
+      <ul>
+        <li>This app uses artificial intelligence</li>
+        <li>The responses are NOT from a real person</li>
+        <li>The app does not represent a real ex-partner</li>
+        <li>It is not intended for emotional or psychological support</li>
+      </ul>
+
+      <h2>4. Data Sharing</h2>
+      <p>We do <strong>NOT</strong> sell user data. We do <strong>NOT</strong> share data for advertising. Data may be shared only when legally required.</p>
+
+      <h2>5. Data Security</h2>
+      <p>We apply industry-standard security measures to protect your data.</p>
+
+      <h2>6. User Rights</h2>
+      <p>Users can:</p>
+      <ul>
+        <li>Request data deletion</li>
+        <li>Stop using the service anytime</li>
+      </ul>
+
+      <h2>7. Contact</h2>
+      <div class="contact">
+        <p><a href="mailto:support@sanalexsevgili.com">📧 support@sanalexsevgili.com</a></p>
+      </div>
+
+      <h1>📜 Terms of Use</h1>
+
+      <h2>1. Service</h2>
+      <p>This app provides AI-based chat simulation.</p>
+
+      <h2>2. Disclaimer</h2>
+      <ul>
+        <li>This is NOT a real person</li>
+        <li>Responses are AI-generated</li>
+        <li>We are not responsible for user decisions</li>
+      </ul>
+
+      <h2>3. Age Limit</h2>
+      <p>18+ only.</p>
+
+      <h2>4. Subscription</h2>
+      <ul>
+        <li>Some features require payment</li>
+        <li>Subscription auto-renews</li>
+        <li>Users can cancel anytime</li>
+      </ul>
+
+      <h2>5. Prohibited Use</h2>
+      <p>Users must not:</p>
+      <ul>
+        <li>Abuse the system</li>
+        <li>Generate harmful content</li>
+      </ul>
+
+    </div>
+
   </div>
+
+  <script>
+    function switchLang(lang) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('section-' + lang).classList.add('active');
+      event.target.classList.add('active');
+    }
+  </script>
 </body>
 </html>
