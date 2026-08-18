@@ -48,9 +48,12 @@ dump.rdb
 
 # Python
 __pycache__/
-*pyc*
+*.pyc
 venv/
 .venv/
+
+# App Store Connect API keys
+*.p8
 
 # Development tools
 chainlit.md
