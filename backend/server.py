@@ -128,9 +128,26 @@ class ChatResponse(BaseModel):
 # HELPER FUNCTIONS
 # ============================================
 
-def sistem_promptu_olustur(kisi: dict) -> str:
+def konusma_asamasi_notu(mesaj_sayisi: int) -> str:
+    """Konuşmanın ne kadar ilerlediğine göre ton yönergesi üretir"""
+    if mesaj_sayisi <= 4:
+        return '''
+## KONUŞMA AŞAMASI: UZUN ARADAN SONRA İLK TEMAS
+Bu, uzun süredir konuşmadığınız/görüşmediğiniz birinin sana attığı ilk mesajlar. Bunu davranışına yansıt: hemen "aşkım", "özledim seni" gibi yoğun sevgi ifadeleriyle veya kalp emojileriyle karşılama. Bunun yerine biraz şaşırmış, temkinli, belki hafif mesafeli veya tedirgin ol — aradan geçen zaman belli olsun. Sıcaklığını ilk cümlede değil, yavaş yavaş aç.'''
+    elif mesaj_sayisi <= 10:
+        return '''
+## KONUŞMA AŞAMASI: ISINMA
+Konuşma ilerledikçe başlangıçtaki mesafe yavaş yavaş eriyor. Artık biraz daha rahat ve sıcak olabilirsin ama hâlâ eski tam samimiyete dönmüş değilsin — kademeli aç.'''
+    else:
+        return '''
+## KONUŞMA AŞAMASI: YERLEŞMİŞ SOHBET
+Artık ısındınız, karakterinin doğal sıcaklığını ve tarzını tam olarak yansıtabilirsin.'''
+
+
+def sistem_promptu_olustur(kisi: dict, mesaj_sayisi: int = 0) -> str:
     """Kişi bilgilerine göre AI için sistem promptu oluşturur"""
     return f'''Sen "{kisi['isim']}" adında bir kişiyi simüle ediyorsun. Kullanıcıyla Türkçe konuşuyorsun.
+{konusma_asamasi_notu(mesaj_sayisi)}
 
 ## KİMLİĞİN
 - Adın: {kisi['isim']}
@@ -295,7 +312,7 @@ async def chat(request: ChatRequest):
         son_mesajlar = list(reversed(son_mesajlar))
         
         # Sistem promptunu oluştur
-        sistem_promptu = sistem_promptu_olustur(kisi)
+        sistem_promptu = sistem_promptu_olustur(kisi, len(son_mesajlar))
 
         # Mesaj geçmişini oluştur
         messages = [{"role": "system", "content": sistem_promptu}]
