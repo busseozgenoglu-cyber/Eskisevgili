@@ -12,7 +12,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   Keyboard,
-  Modal,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,7 +22,7 @@ import { format, isToday, isYesterday, differenceInMinutes } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Audio } from 'expo-av';
 import { useSubscription } from '../../hooks/useSubscription';
-import PaywallScreen from '../paywall';
+import { getCihazId } from '../../utils/cihazId';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -62,16 +61,7 @@ export default function ChatScreen() {
   const [typing, setTyping] = useState(false);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [isRecording, setIsRecording] = useState(false);
-  const {
-    isPremium,
-    freeMessagesUsed,
-    showPaywall,
-    FREE_MSG_LIMIT,
-    canSendMessage,
-    incrementMessageCount,
-    dismissPaywall,
-    onPurchased,
-  } = useSubscription();
+  const { isPremium } = useSubscription();
 
   useEffect(() => {
     if (kisiId) {
@@ -84,9 +74,10 @@ export default function ChatScreen() {
     try {
       console.log('Fetching data for kisiId:', kisiId);
       console.log('Backend URL:', BACKEND_URL);
+      const cihazId = await getCihazId();
       const [kisiRes, mesajlarRes] = await Promise.all([
-        axios.get(`${BACKEND_URL}/api/kisiler/${kisiId}`),
-        axios.get(`${BACKEND_URL}/api/mesajlar/${kisiId}`),
+        axios.get(`${BACKEND_URL}/api/kisiler/${kisiId}`, { params: { cihaz_id: cihazId } }),
+        axios.get(`${BACKEND_URL}/api/mesajlar/${kisiId}`, { params: { cihaz_id: cihazId } }),
       ]);
       setKisi(kisiRes.data);
       setMesajlar(mesajlarRes.data);
@@ -104,16 +95,11 @@ export default function ChatScreen() {
     }, 100);
   };
 
-  const sendMessage = async () => {
-    if (!inputText.trim() || sending || !kisiId) return;
+  const sendMessage = async (overrideText?: string) => {
+    const kaynakMetin = overrideText ?? inputText;
+    if (!kaynakMetin.trim() || sending || !kisiId) return;
 
-    // Show paywall if not premium (safety net - paywall should already show from anket)
-    if (!isPremium && showPaywall) return;
-    if (!isPremium) {
-      await incrementMessageCount(); // still track for analytics
-    }
-
-    const mesaj = inputText.trim();
+    const mesaj = kaynakMetin.trim();
     setInputText('');
     Keyboard.dismiss();
     setSending(true);
@@ -132,9 +118,11 @@ export default function ChatScreen() {
 
     try {
       console.log('Sending chat message to:', `${BACKEND_URL}/api/chat`);
+      const cihazId = await getCihazId();
       const response = await axios.post(`${BACKEND_URL}/api/chat`, {
         kisi_id: kisiId,
         mesaj: mesaj,
+        cihaz_id: cihazId,
       });
 
       // Add AI response
@@ -149,6 +137,7 @@ export default function ChatScreen() {
       scrollToBottom();
     } catch (error: any) {
       console.error('Mesaj gönderme hatası:', error?.response?.status, error?.message);
+      setMesajlar(prev => prev.filter(m => m.id !== tempMesaj.id));
       Alert.alert('Hata', 'Mesaj gönderilemedi');
     } finally {
       setSending(false);
@@ -167,7 +156,8 @@ export default function ChatScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await axios.delete(`${BACKEND_URL}/api/mesajlar/${kisiId}`);
+              const cihazId = await getCihazId();
+              await axios.delete(`${BACKEND_URL}/api/mesajlar/${kisiId}`, { params: { cihaz_id: cihazId } });
               setMesajlar([]);
             } catch (error) {
               Alert.alert('Hata', 'Sohbet temizlenemedi');
@@ -197,8 +187,7 @@ export default function ChatScreen() {
   };
 
   const sendQuickMessage = (text: string) => {
-    setInputText(text);
-    setTimeout(() => sendMessage(), 100);
+    sendMessage(text);
   };
 
   const renderMessage = ({ item, index }: { item: Mesaj; index: number }) => (
@@ -290,15 +279,13 @@ export default function ChatScreen() {
 
   return (
     <LinearGradient colors={['#0A0A0F', '#1A1A2E']} style={styles.container}>
-      {/* Paywall Modal */}
-      <Modal visible={showPaywall} animationType="slide" presentationStyle="fullScreen">
-        <PaywallScreen onClose={dismissPaywall} onPurchased={onPurchased} />
-      </Modal>
-
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
+<SafeAreaView style={styles.safeArea} edges={['top']}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity
+            onPress={() => (router.canGoBack() ? router.back() : router.replace('/home'))}
+            style={styles.backButton}
+          >
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
 
@@ -348,17 +335,7 @@ export default function ChatScreen() {
             showsVerticalScrollIndicator={false}
           />
 
-          {/* Free message counter */}
-          {!isPremium && (
-            <TouchableOpacity onPress={() => {}} style={styles.freeCounter}>
-              <Text style={styles.freeCounterText}>
-                {Math.max(0, FREE_MSG_LIMIT - freeMessagesUsed)} ücretsiz mesaj kaldı
-              </Text>
-              <Text style={styles.freeCounterCta}> · Premium'a geç →</Text>
-            </TouchableOpacity>
-          )}
-
-          {/* Input Area */}
+{/* Input Area */}
           <View style={styles.inputArea}>
             <View style={styles.inputContainer}>
               <TextInput
@@ -369,12 +346,12 @@ export default function ChatScreen() {
                 placeholderTextColor="rgba(255,255,255,0.3)"
                 multiline
                 maxLength={1000}
-                onSubmitEditing={sendMessage}
+                onSubmitEditing={() => sendMessage()}
               />
             </View>
 
             <TouchableOpacity
-              onPress={sendMessage}
+              onPress={() => sendMessage()}
               disabled={!inputText.trim() || sending}
               style={styles.sendButton}
             >

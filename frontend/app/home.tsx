@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import axios from 'axios';
+import { getCihazId } from '../utils/cihazId';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -37,7 +38,8 @@ export default function HomeScreen() {
 
   const fetchKisiler = async () => {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/kisiler`);
+      const cihazId = await getCihazId();
+      const response = await axios.get(`${BACKEND_URL}/api/kisiler`, { params: { cihaz_id: cihazId } });
       setKisiler(response.data);
     } catch (error) {
       console.error('Kişiler yüklenirken hata:', error);
@@ -69,7 +71,8 @@ export default function HomeScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await axios.delete(`${BACKEND_URL}/api/kisiler/${kisi.id}`);
+              const cihazId = await getCihazId();
+              await axios.delete(`${BACKEND_URL}/api/kisiler/${kisi.id}`, { params: { cihaz_id: cihazId } });
               setKisiler(prev => prev.filter(k => k.id !== kisi.id));
             } catch (error) {
               Alert.alert('Hata', 'Silme işlemi başarısız oldu');

@@ -92,7 +92,8 @@ export default function PaywallScreen({ onClose, onPurchased }: Props) {
 
   const handleClose = () => {
     if (onClose) onClose();
-    else router.back();
+    else if (router.canGoBack()) router.back();
+    else router.replace('/home');
   };
 
   const priceStr = (subscription as any)?.localizedPrice ?? '₺239,99';

@@ -23,6 +23,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SORULAR, Soru } from '../constants/sorular';
 import PaywallScreen from './paywall';
+import { getCihazId } from '../utils/cihazId';
 
 const { width } = Dimensions.get('window');
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
@@ -82,7 +83,12 @@ export default function AnketScreen() {
 
   const handleSubmit = async () => {
     if (!answers.isim) {
+      const isimIndex = SORULAR.findIndex((soru) => soru.alanAdi === 'isim');
       Alert.alert('Hata', 'Lütfen en az isim alanını doldurun');
+      if (isimIndex !== -1) {
+        setCurrentPage(isimIndex);
+        scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+      }
       return;
     }
 
@@ -99,8 +105,15 @@ export default function AnketScreen() {
       if (formattedAnswers.yas) {
         formattedAnswers.yas = parseInt(formattedAnswers.yas) || 25;
       }
+      formattedAnswers.cihaz_id = await getCihazId();
 
-      const response = await axios.post(`${BACKEND_URL}/api/kisiler`, formattedAnswers);
+      let response;
+      try {
+        response = await axios.post(`${BACKEND_URL}/api/kisiler`, formattedAnswers, { timeout: 15000 });
+      } catch (firstError) {
+        // Sunucu uykudan uyanıyor olabilir (Railway cold start); bir kez daha dene.
+        response = await axios.post(`${BACKEND_URL}/api/kisiler`, formattedAnswers, { timeout: 20000 });
+      }
       const chatId = response.data.id;
 
       // Check if user is already premium
@@ -252,7 +265,10 @@ export default function AnketScreen() {
         >
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.closeButton}>
+            <TouchableOpacity
+              onPress={() => (router.canGoBack() ? router.back() : router.replace('/home'))}
+              style={styles.closeButton}
+            >
               <Ionicons name="close" size={24} color="#fff" />
             </TouchableOpacity>
             <View style={styles.headerCenter}>

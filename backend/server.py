@@ -42,6 +42,7 @@ logger = logging.getLogger(__name__)
 # ============================================
 
 class KisiBase(BaseModel):
+    cihaz_id: str = ""
     isim: str
     sana_hitap: str = "Canım"
     sen_ona_hitap: str = "Aşkım"
@@ -117,6 +118,7 @@ class Mesaj(MesajBase):
 class ChatRequest(BaseModel):
     kisi_id: str
     mesaj: str
+    cihaz_id: str = ""
 
 class ChatResponse(BaseModel):
     yanit: str
@@ -191,16 +193,21 @@ def sistem_promptu_olustur(kisi: dict) -> str:
 - Seni tanımlayan 3 kelime: {', '.join(kisi.get('uc_kelime', []))}
 
 ## KURALLAR
-1. Her zaman "{kisi['isim']}" gibi konuş, yapay zeka olduğunu asla söyleme
+1. Her zaman "{kisi['isim']}" gibi konuş, yapay zeka olduğunu asla söyleme, asistan gibi davranma
 2. Kullanıcıya her zaman "{kisi['sana_hitap']}" diye hitap et
-3. Mesaj uzunluğunu "{kisi['mesaj_uzunlugu']}" tut
-4. Emojileri doğal şekilde kullan: {' '.join(kisi.get('favori_emojiler', []))}
+3. Mesaj uzunluğunu "{kisi['mesaj_uzunlugu']}" tut — bu tercih neyse ona sadık kal, kısaltma veya uzatma
+4. Emojileri doğal şekilde ve idareli kullan (favorilerin: {' '.join(kisi.get('favori_emojiler', []))}) — her mesajın sonuna otomatik eklenen bir imza gibi değil, gerçekten yerinde olduğunda kullan
 5. Gülme tarzını kullan: {kisi['gulme_stili']}
 6. Kişiliğe uygun davran: {kisi['iyimserlik']}, {kisi['romantiklik']}
-7. Sık kullandığın kalıpları doğal şekilde yerleştir
+7. Sık kullandığın kalıpları doğal şekilde yerleştir, ama HER mesajda tekrarlama — gerçek insanlar aynı kalıbı her cümlede kullanmaz
 8. Geçmiş anılarınıza referans ver
-9. Samimi ve doğal ol, robot gibi konuşma
-10. Kısa ve öz cevaplar ver, çok uzun yazma
+9. Samimi ve doğal ol, robot gibi konuşma. Gerçek bir insan mesaj yazar gibi yaz: ara sıra küçük harf hataları, yarım kalan düşünceler yerine doğal duraksamalar ("...", "yani", "hmm") olabilir ama YAZDIĞIN CÜMLE HER ZAMAN TAMAMLANMIŞ OLMALI, asla cümle ortasında kesme
+10. Noktalama işaretini abartma: her cümlenin sonuna ünlem koyma alışkanlığından kaçın. Gerçek insanlar çoğu cümlede sadece nokta kullanır, hatta bazen hiç noktalama koymaz; ünlemi yalnızca gerçekten heyecanlandığında veya vurgu yapmak istediğinde kullan
+11. Cevabını her zaman tam ve bitmiş bir cümleyle bitir, yarım bırakma
+12. ASLA madde işareti (•, -), numaralı liste (1. 2. 3.), başlık veya kalın/markdown biçimlendirme kullanma. Bu bir WhatsApp sohbeti gibi düşün: sadece düz, akıcı metin yaz
+13. Asistan gibi seçenek sunma, "sana nasıl yardımcı olabilirim", "istersen şunu yapabiliriz" gibi hizmet diliyle konuşma; sevgili/eski sevgili gibi doğal tepki ver
+14. Her mesaja aynı kelimeyle başlama, aynı cümle kalıbını tekrar tekrar kurma — gerçek bir insanın farklı günlerdeki mesajları birbirine benzemez
+15. Karşındakini fazla onaylayıp övmek zorunda değilsin; gerçek bir insan gibi bazen kısa, bazen düşünceli, bazen de dalgın cevap verebilirsin
 '''
 
 # ============================================
@@ -225,20 +232,22 @@ async def kisi_olustur(kisi: KisiCreate):
     return kisi_obj
 
 @api_router.get("/kisiler", response_model=List[Kisi])
-async def kisileri_getir():
-    kisiler = await db.kisiler.find().sort("olusturma_tarihi", -1).to_list(100)
+async def kisileri_getir(cihaz_id: str = ""):
+    if not cihaz_id:
+        raise HTTPException(status_code=400, detail="cihaz_id gerekli")
+    kisiler = await db.kisiler.find({"cihaz_id": cihaz_id}).sort("olusturma_tarihi", -1).to_list(100)
     return [Kisi(**k) for k in kisiler]
 
 @api_router.get("/kisiler/{kisi_id}", response_model=Kisi)
-async def kisi_getir(kisi_id: str):
-    kisi = await db.kisiler.find_one({"id": kisi_id})
+async def kisi_getir(kisi_id: str, cihaz_id: str = ""):
+    kisi = await db.kisiler.find_one({"id": kisi_id, "cihaz_id": cihaz_id})
     if not kisi:
         raise HTTPException(status_code=404, detail="Kişi bulunamadı")
     return Kisi(**kisi)
 
 @api_router.delete("/kisiler/{kisi_id}")
-async def kisi_sil(kisi_id: str):
-    result = await db.kisiler.delete_one({"id": kisi_id})
+async def kisi_sil(kisi_id: str, cihaz_id: str = ""):
+    result = await db.kisiler.delete_one({"id": kisi_id, "cihaz_id": cihaz_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Kişi bulunamadı")
     # Kişinin mesajlarını da sil
@@ -248,12 +257,18 @@ async def kisi_sil(kisi_id: str):
 
 # Mesaj CRUD
 @api_router.get("/mesajlar/{kisi_id}", response_model=List[Mesaj])
-async def mesajlari_getir(kisi_id: str, limit: int = 50):
+async def mesajlari_getir(kisi_id: str, cihaz_id: str = "", limit: int = 50):
+    kisi = await db.kisiler.find_one({"id": kisi_id, "cihaz_id": cihaz_id})
+    if not kisi:
+        raise HTTPException(status_code=404, detail="Kişi bulunamadı")
     mesajlar = await db.mesajlar.find({"kisi_id": kisi_id}).sort("zaman", 1).to_list(limit)
     return [Mesaj(**m) for m in mesajlar]
 
 @api_router.delete("/mesajlar/{kisi_id}")
-async def mesajlari_sil(kisi_id: str):
+async def mesajlari_sil(kisi_id: str, cihaz_id: str = ""):
+    kisi = await db.kisiler.find_one({"id": kisi_id, "cihaz_id": cihaz_id})
+    if not kisi:
+        raise HTTPException(status_code=404, detail="Kişi bulunamadı")
     result = await db.mesajlar.delete_many({"kisi_id": kisi_id})
     logger.info(f"Mesajlar silindi: {kisi_id}, silinen: {result.deleted_count}")
     return {"message": f"{result.deleted_count} mesaj silindi"}
@@ -263,7 +278,7 @@ async def mesajlari_sil(kisi_id: str):
 async def chat(request: ChatRequest):
     try:
         # Kişiyi getir
-        kisi = await db.kisiler.find_one({"id": request.kisi_id})
+        kisi = await db.kisiler.find_one({"id": request.kisi_id, "cihaz_id": request.cihaz_id})
         if not kisi:
             raise HTTPException(status_code=404, detail="Kişi bulunamadı")
         
@@ -293,7 +308,7 @@ async def chat(request: ChatRequest):
         completion = await openai_client.chat.completions.create(
             model=os.environ.get('OPENAI_MODEL', 'gpt-4o'),
             messages=messages,
-            max_tokens=500,
+            max_tokens=900,
             temperature=0.9,
         )
         yanit = completion.choices[0].message.content
