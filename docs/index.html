@@ -3,17 +3,62 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sanal Eski Sevgili</title>
+  <title>SanalEx</title>
   <style>
-    body { font-family: -apple-system, sans-serif; background: #0a0a0f; color: #fff; text-align: center; padding: 80px 20px; }
-    h1 { font-size: 36px; margin-bottom: 12px; }
-    p { color: #9D4EDD; font-size: 18px; margin-bottom: 40px; }
-    a { color: #6C63FF; text-decoration: none; border: 1px solid #6C63FF; padding: 10px 24px; border-radius: 20px; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #000000;
+      color: #F2F5F7;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+    }
+    .wrap { max-width: 560px; width: 100%; }
+    .brand {
+      font-size: 11px; font-weight: 700; letter-spacing: 2.2px;
+      color: #00E5FF; margin-bottom: 48px;
+    }
+    h1 {
+      font-size: clamp(38px, 9vw, 62px);
+      font-weight: 800;
+      letter-spacing: -2px;
+      line-height: 1.04;
+      margin-bottom: 20px;
+    }
+    h1 .accent {
+      color: #00E5FF;
+      text-shadow: 0 0 24px rgba(0,229,255,0.45);
+    }
+    .sub {
+      font-size: 14px; color: rgba(242,245,247,0.30);
+      font-style: italic; margin-bottom: 48px;
+    }
+    .rule { height: 1px; background: rgba(255,255,255,0.08); margin-bottom: 32px; }
+    .links { display: flex; flex-wrap: wrap; gap: 12px; }
+    a {
+      font-size: 11px; font-weight: 700; letter-spacing: 2.2px;
+      color: #00E5FF; text-decoration: none;
+      border: 1px solid #00E5FF; background: rgba(0,229,255,0.06);
+      padding: 14px 26px; transition: background .2s;
+    }
+    a:hover { background: rgba(0,229,255,0.16); }
+    .foot { margin-top: 48px; font-size: 11px; color: rgba(242,245,247,0.14); }
   </style>
 </head>
 <body>
-  <h1>💔 Sanal Eski Sevgili</h1>
-  <p>Onunla bir daha konuşabilseydin…</p>
-  <a href="privacy.html">Gizlilik Politikası</a>
+  <div class="wrap">
+    <div class="brand">SANALEX</div>
+    <h1>Geçmiş bazen<br>geri dönmez.<br><span class="accent">Konuşur.</span></h1>
+    <p class="sub">eski bir sohbet, yeni bir yüzleşme</p>
+    <div class="rule"></div>
+    <div class="links">
+      <a href="privacy.html">GİZLİLİK</a>
+      <a href="support.html">DESTEK</a>
+    </div>
+    <p class="foot">© 2026 Buse Özgenoğlu</p>
+  </div>
 </body>
 </html>

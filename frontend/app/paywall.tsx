@@ -8,7 +8,6 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -20,8 +19,12 @@ import RNIap, {
   getAvailablePurchases,
   Subscription,
 } from 'react-native-iap';
+import SanalExMark from '../components/SanalExMark';
+import { colors, type, radius, space, glow } from '../constants/theme';
 
 const PRODUCT_ID = 'com.sanaleskisevgili.app.premium.weekly';
+const PRIVACY_URL = 'https://busseozgenoglu-cyber.github.io/Eskisevgili/privacy.html';
+const TERMS_URL = 'https://busseozgenoglu-cyber.github.io/Eskisevgili/privacy.html#terms';
 
 interface Props {
   onClose?: () => void;
@@ -101,105 +104,135 @@ export default function PaywallScreen({ onClose, onPurchased }: Props) {
   const priceStr = (subscription as any)?.localizedPrice ?? '₺239,99';
 
   return (
-    <LinearGradient colors={['#0A0A0F', '#1A0A2E']} style={styles.container}>
+    <View style={styles.root}>
       <SafeAreaView style={styles.safe}>
-        <TouchableOpacity style={styles.closeBtn} onPress={handleClose}>
-          <Ionicons name="close" size={24} color="rgba(255,255,255,0.6)" />
+        <TouchableOpacity style={styles.closeBtn} onPress={handleClose} hitSlop={12}>
+          <Ionicons name="close" size={22} color={colors.textFaint} />
         </TouchableOpacity>
 
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-          <View style={styles.iconWrap}>
-            <Text style={styles.heartIcon}>💔</Text>
-          </View>
+          <SanalExMark size={64} />
 
-          <Text style={styles.title}>Sınırsız Konuş</Text>
-          <Text style={styles.subtitle}>
-            Eski sevgilinle dilediğin kadar konuş.{'\n'}7 gün tamamen ücretsiz dene.
+          <Text style={styles.title}>Sohbet{'\n'}kilitli.</Text>
+          <Text style={styles.sub}>
+            Konuşmaya devam etmek için erişimi aç.{'\n'}İlk 7 gün ücretsiz.
           </Text>
 
-          <View style={styles.features}>
-            {[
-              ['chatbubbles', 'Sınırsız mesaj'],
-              ['flash', 'Anında yanıt'],
-              ['heart', 'Özlem dolu sohbetler'],
-              ['shield-checkmark', '7 gün ücretsiz'],
-            ].map(([icon, text]) => (
-              <View key={text} style={styles.feature}>
-                <View style={styles.featureIcon}>
-                  <Ionicons name={icon as any} size={20} color="#9D4EDD" />
-                </View>
-                <Text style={styles.featureText}>{text}</Text>
-              </View>
-            ))}
+          <View style={styles.divider} />
+
+          <View style={styles.specs}>
+            <SpecRow index="01" text="Sınırsız mesaj" />
+            <SpecRow index="02" text="Anında yanıt" />
+            <SpecRow index="03" text="Tüm kayıtlara erişim" />
           </View>
 
-          <LinearGradient
-            colors={['rgba(108,99,255,0.15)', 'rgba(157,78,221,0.15)']}
-            style={styles.priceBlock}
-          >
-            <Text style={styles.trialBadge}>7 GÜN ÜCRETSİZ</Text>
-            <Text style={styles.subscriptionTitle}>Premium Haftalık</Text>
-            <Text style={styles.priceText}>{priceStr}/hafta</Text>
-            <Text style={styles.priceSub}>Süre: 1 hafta · Deneme bittikten sonra otomatik olarak yenilenir ve ücretlendirilirsin</Text>
-          </LinearGradient>
+          <View style={styles.divider} />
 
-          <TouchableOpacity onPress={handlePurchase} disabled={loading || fetchingProducts} activeOpacity={0.85}>
-            <LinearGradient colors={['#6C63FF', '#9D4EDD']} style={styles.purchaseBtn}>
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.purchaseBtnText}>7 Gün Ücretsiz Başla</Text>
-              )}
-            </LinearGradient>
+          {/* Apple guideline 3.1.2(c): the subscription's title, length and
+              price must all be visible inside the purchase flow itself. */}
+          <View style={styles.planBox}>
+            <Text style={styles.planBadge}>7 GÜN ÜCRETSİZ</Text>
+            <Text style={styles.planName}>Premium Haftalık</Text>
+            <Text style={styles.planPrice}>{priceStr} / hafta</Text>
+            <Text style={styles.planTerms}>
+              Süre: 1 hafta. Deneme sonunda otomatik yenilenir, dilediğin zaman
+              App Store ayarlarından iptal edebilirsin.
+            </Text>
+          </View>
+
+          <TouchableOpacity
+            onPress={handlePurchase}
+            disabled={loading || fetchingProducts}
+            activeOpacity={0.7}
+            style={[styles.cta, (loading || fetchingProducts) && styles.ctaDisabled]}
+          >
+            {loading ? (
+              <ActivityIndicator color={colors.cyan} />
+            ) : (
+              <Text style={styles.ctaText}>ERİŞİMİ AÇ</Text>
+            )}
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={handleRestore} style={styles.restoreBtn}>
+          <TouchableOpacity onPress={handleRestore} style={styles.restore} hitSlop={8}>
             <Text style={styles.restoreText}>Satın alımı geri yükle</Text>
           </TouchableOpacity>
 
-          <Text style={styles.legal}>
-            Abonelik, deneme süresi sonunda otomatik olarak yenilenir. İptal etmek için App Store ayarlarını kullan.
-          </Text>
-
           <View style={styles.legalLinks}>
-            <TouchableOpacity onPress={() => Linking.openURL('https://busseozgenoglu-cyber.github.io/Eskisevgili/privacy.html')}>
+            <TouchableOpacity onPress={() => Linking.openURL(PRIVACY_URL)} hitSlop={8}>
               <Text style={styles.legalLink}>Gizlilik Politikası</Text>
             </TouchableOpacity>
-            <Text style={styles.legalLinkSeparator}>·</Text>
-            <TouchableOpacity onPress={() => Linking.openURL('https://busseozgenoglu-cyber.github.io/Eskisevgili/privacy.html#terms')}>
+            <Text style={styles.legalSep}>·</Text>
+            <TouchableOpacity onPress={() => Linking.openURL(TERMS_URL)} hitSlop={8}>
               <Text style={styles.legalLink}>Kullanım Şartları</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
+  );
+}
+
+function SpecRow({ index, text }: { index: string; text: string }) {
+  return (
+    <View style={styles.specRow}>
+      <Text style={styles.specIndex}>{index}</Text>
+      <Text style={styles.specText}>{text}</Text>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  root: { flex: 1, backgroundColor: colors.bg },
   safe: { flex: 1 },
-  closeBtn: { alignSelf: 'flex-end', padding: 16 },
-  content: { alignItems: 'center', paddingHorizontal: 24, paddingBottom: 40 },
-  iconWrap: { marginBottom: 20 },
-  heartIcon: { fontSize: 72 },
-  title: { fontSize: 30, fontWeight: '700', color: '#fff', marginBottom: 12, textAlign: 'center' },
-  subtitle: { fontSize: 16, color: 'rgba(255,255,255,0.6)', textAlign: 'center', lineHeight: 24, marginBottom: 32 },
-  features: { width: '100%', marginBottom: 28, gap: 14 },
-  feature: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  featureIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(157,78,221,0.15)', justifyContent: 'center', alignItems: 'center' },
-  featureText: { fontSize: 16, color: '#fff', fontWeight: '500' },
-  priceBlock: { width: '100%', borderRadius: 16, padding: 20, alignItems: 'center', marginBottom: 24, borderWidth: 1, borderColor: 'rgba(108,99,255,0.3)' },
-  trialBadge: { fontSize: 12, fontWeight: '700', color: '#9D4EDD', letterSpacing: 1, marginBottom: 8 },
-  subscriptionTitle: { fontSize: 15, fontWeight: '600', color: '#fff', marginBottom: 4 },
-  priceText: { fontSize: 28, fontWeight: '700', color: '#fff', marginBottom: 6 },
-  priceSub: { fontSize: 12, color: 'rgba(255,255,255,0.4)' },
-  purchaseBtn: { width: 300, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
-  purchaseBtnText: { fontSize: 17, fontWeight: '700', color: '#fff' },
-  restoreBtn: { paddingVertical: 12, marginBottom: 16 },
-  restoreText: { fontSize: 14, color: 'rgba(255,255,255,0.5)', textDecorationLine: 'underline' },
-  legal: { fontSize: 11, color: 'rgba(255,255,255,0.25)', textAlign: 'center', lineHeight: 16, paddingHorizontal: 10 },
-  legalLinks: { flexDirection: 'row', alignItems: 'center', marginTop: 10 },
-  legalLink: { fontSize: 12, color: 'rgba(255,255,255,0.4)', textDecorationLine: 'underline' },
-  legalLinkSeparator: { fontSize: 12, color: 'rgba(255,255,255,0.25)', marginHorizontal: 8 },
+  closeBtn: { alignSelf: 'flex-end', padding: space.md },
+  content: { paddingHorizontal: space.lg, paddingBottom: space.xl },
+
+  title: { ...type.display, color: colors.text, marginTop: space.lg },
+  sub: { ...type.body, color: colors.textMuted, marginTop: space.sm },
+
+  divider: { height: 1, backgroundColor: colors.hairline, marginVertical: space.lg },
+
+  specs: { gap: space.md },
+  specRow: { flexDirection: 'row', alignItems: 'flex-start', gap: space.md },
+  specIndex: { ...type.label, color: colors.cyan, opacity: 0.6, marginTop: 3 },
+  specText: { ...type.body, color: colors.textMuted, flex: 1 },
+
+  planBox: {
+    borderWidth: 1,
+    borderColor: colors.hairlineStrong,
+    borderRadius: radius.sharp,
+    backgroundColor: colors.surface,
+    padding: space.md,
+    gap: 6,
+  },
+  planBadge: { ...type.label, color: colors.cyan },
+  planName: { ...type.heading, color: colors.text, marginTop: space.xs },
+  planPrice: { ...type.title, color: colors.text },
+  planTerms: { ...type.small, color: colors.textFaint, fontSize: 11, marginTop: space.xs },
+
+  cta: {
+    borderWidth: 1,
+    borderColor: colors.cyan,
+    borderRadius: radius.sharp,
+    paddingVertical: 18,
+    alignItems: 'center',
+    backgroundColor: colors.cyanFaint,
+    marginTop: space.lg,
+    ...glow(colors.cyan, 12),
+  },
+  ctaDisabled: { opacity: 0.45 },
+  ctaText: { ...type.label, color: colors.cyan },
+
+  restore: { paddingVertical: space.md, alignItems: 'center' },
+  restoreText: { ...type.small, color: colors.textFaint, textDecorationLine: 'underline' },
+
+  legalLinks: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: space.sm,
+    marginTop: space.xs,
+  },
+  legalLink: { ...type.small, fontSize: 12, color: colors.textMuted, textDecorationLine: 'underline' },
+  legalSep: { ...type.small, color: colors.textGhost },
 });

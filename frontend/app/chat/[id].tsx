@@ -16,7 +16,6 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import axios from 'axios';
 import { format, isToday, isYesterday, differenceInMinutes } from 'date-fns';
@@ -25,6 +24,7 @@ import { Audio } from 'expo-av';
 import { useSubscription } from '../../hooks/useSubscription';
 import { getCihazId } from '../../utils/cihazId';
 import PaywallScreen from '../paywall';
+import { colors, type, radius, space } from '../../constants/theme';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -213,9 +213,9 @@ export default function ChatScreen() {
           kisi?.profil_foto ? (
             <Image source={{ uri: kisi.profil_foto }} style={styles.avatarSmall} />
           ) : (
-            <LinearGradient colors={['#6C63FF', '#9D4EDD']} style={styles.avatarSmall}>
-              <Text style={styles.avatarEmoji}>{kisi?.profil_emoji || '💜'}</Text>
-            </LinearGradient>
+            <View style={[styles.avatarSmall, styles.avatarFallback]}>
+              <Text style={styles.avatarEmoji}>{kisi?.profil_emoji || '◍'}</Text>
+            </View>
           )
         )}
         <View
@@ -224,20 +224,11 @@ export default function ChatScreen() {
             item.kullanicidan_mi ? styles.userBubble : styles.aiBubble,
           ]}
         >
-          {item.kullanicidan_mi ? (
-            <LinearGradient
-              colors={['#6C63FF', '#9D4EDD']}
-              style={styles.userBubbleGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <Text style={styles.messageText}>{item.icerik}</Text>
-            </LinearGradient>
-          ) : (
-            <Text style={styles.messageTextAI}>{item.icerik}</Text>
-          )}
+          <Text style={item.kullanicidan_mi ? styles.messageText : styles.messageTextAI}>
+            {item.icerik}
+          </Text>
         </View>
-        {item.kullanicidan_mi && <View style={{ width: 40 }} />}
+        {item.kullanicidan_mi && <View style={{ width: 36 }} />}
       </View>
     </View>
   );
@@ -247,12 +238,12 @@ export default function ChatScreen() {
       {kisi?.profil_foto ? (
         <Image source={{ uri: kisi.profil_foto }} style={styles.emptyAvatar} />
       ) : (
-        <LinearGradient colors={['#6C63FF', '#9D4EDD']} style={styles.emptyAvatar}>
-          <Text style={styles.emptyEmoji}>{kisi?.profil_emoji || '💜'}</Text>
-        </LinearGradient>
+        <View style={[styles.emptyAvatar, styles.avatarFallback]}>
+          <Text style={styles.emptyEmoji}>{kisi?.profil_emoji || '◍'}</Text>
+        </View>
       )}
-      <Text style={styles.emptyTitle}>Merhaba! Ben {kisi?.isim}</Text>
-      <Text style={styles.emptySubtitle}>Sohbete başlamak için bir mesaj yaz</Text>
+      <Text style={styles.emptyTitle}>{kisi?.isim}</Text>
+      <Text style={styles.emptySubtitle}>kayıt açık · yazmaya başla</Text>
 
       <View style={styles.quickReplies}>
         <TouchableOpacity
@@ -280,7 +271,7 @@ export default function ChatScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6C63FF" />
+        <ActivityIndicator size="large" color={colors.cyan} />
       </View>
     );
   }
@@ -296,23 +287,24 @@ export default function ChatScreen() {
           onPurchased={() => setShowPaywall(false)}
         />
       </Modal>
-    <LinearGradient colors={['#0A0A0F', '#1A1A2E']} style={styles.container}>
+    <View style={styles.container}>
 <SafeAreaView style={styles.safeArea} edges={['top']}>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
             onPress={() => (router.canGoBack() ? router.back() : router.replace('/home'))}
             style={styles.backButton}
+            hitSlop={8}
           >
-            <Ionicons name="arrow-back" size={24} color="#fff" />
+            <Ionicons name="arrow-back" size={22} color={colors.text} />
           </TouchableOpacity>
 
           {kisi?.profil_foto ? (
             <Image source={{ uri: kisi.profil_foto }} style={styles.headerAvatar} />
           ) : (
-            <LinearGradient colors={['#6C63FF', '#9D4EDD']} style={styles.headerAvatar}>
-              <Text style={styles.headerEmoji}>{kisi?.profil_emoji || '💜'}</Text>
-            </LinearGradient>
+            <View style={[styles.headerAvatar, styles.avatarFallback]}>
+              <Text style={styles.headerEmoji}>{kisi?.profil_emoji || '◍'}</Text>
+            </View>
           )}
 
           <View style={styles.headerInfo}>
@@ -331,8 +323,8 @@ export default function ChatScreen() {
             )}
           </View>
 
-          <TouchableOpacity onPress={clearChat} style={styles.menuButton}>
-            <Ionicons name="ellipsis-vertical" size={20} color="rgba(255,255,255,0.7)" />
+          <TouchableOpacity onPress={clearChat} style={styles.menuButton} hitSlop={8}>
+            <Ionicons name="ellipsis-vertical" size={18} color={colors.textFaint} />
           </TouchableOpacity>
         </View>
 
@@ -360,8 +352,8 @@ export default function ChatScreen() {
                 style={styles.textInput}
                 value={inputText}
                 onChangeText={setInputText}
-                placeholder="Mesaj yaz..."
-                placeholderTextColor="rgba(255,255,255,0.3)"
+                placeholder="Mesaj yaz…"
+                placeholderTextColor={colors.textGhost}
                 multiline
                 maxLength={1000}
                 onSubmitEditing={() => sendMessage()}
@@ -371,263 +363,150 @@ export default function ChatScreen() {
             <TouchableOpacity
               onPress={() => sendMessage()}
               disabled={!inputText.trim() || sending}
-              style={styles.sendButton}
+              style={[
+                styles.sendButton,
+                (!inputText.trim() || sending) && styles.sendButtonDisabled,
+              ]}
+              activeOpacity={0.7}
             >
-              <LinearGradient
-                colors={sending ? ['#666', '#777'] : ['#6C63FF', '#9D4EDD']}
-                style={styles.sendButtonGradient}
-              >
-                <Ionicons name="send" size={22} color="#fff" />
-              </LinearGradient>
+              <Ionicons name="arrow-up" size={20} color={colors.cyan} />
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  safeArea: {
-    flex: 1,
-  },
+  container: { flex: 1, backgroundColor: colors.bg },
+  safeArea: { flex: 1 },
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#0A0A0F',
+    backgroundColor: colors.bg,
     justifyContent: 'center',
     alignItems: 'center',
   },
+
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 15,
-    backgroundColor: 'rgba(10,10,15,0.9)',
+    gap: space.sm,
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)',
+    borderBottomColor: colors.hairline,
   },
-  backButton: {
-    width: 44,
-    height: 44,
+  backButton: { padding: space.xs },
+  headerAvatar: { width: 34, height: 34, borderRadius: radius.sm },
+  avatarFallback: {
+    borderWidth: 1,
+    borderColor: colors.hairlineStrong,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
     justifyContent: 'center',
-    alignItems: 'center',
   },
-  headerAvatar: {
-    width: 45,
-    height: 45,
-    borderRadius: 22.5,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerEmoji: {
-    fontSize: 22,
-  },
-  headerInfo: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  headerName: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  onlineStatus: {
-    fontSize: 12,
-    color: '#4ade80',
-  },
-  typingIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  typingText: {
-    fontSize: 12,
-    color: '#6C63FF',
-  },
-  typingDots: {
-    flexDirection: 'row',
-    gap: 2,
-  },
-  dot: {
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
-    backgroundColor: '#6C63FF',
-    opacity: 0.5,
-  },
-  dotDelay1: {
-    opacity: 0.7,
-  },
-  dotDelay2: {
-    opacity: 0.4,
-  },
-  menuButton: {
-    width: 44,
-    height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  chatContainer: {
-    flex: 1,
-  },
-  messagesList: {
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    flexGrow: 1,
-  },
+  headerEmoji: { fontSize: 15 },
+  headerInfo: { flex: 1, gap: 2 },
+  headerName: { ...type.heading, color: colors.text },
+  onlineStatus: { ...type.label, fontSize: 9, color: colors.cyan, opacity: 0.7 },
+  typingIndicator: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  typingText: { ...type.label, fontSize: 9, color: colors.cyan, opacity: 0.7 },
+  typingDots: { flexDirection: 'row', gap: 3 },
+  dot: { width: 3, height: 3, borderRadius: 1.5, backgroundColor: colors.cyan },
+  dotDelay1: { opacity: 0.6 },
+  dotDelay2: { opacity: 0.3 },
+  menuButton: { padding: space.xs },
+
+  chatContainer: { flex: 1 },
+  messagesList: { paddingHorizontal: space.md, paddingVertical: space.md, flexGrow: 1 },
+
   timeStamp: {
+    ...type.label,
+    fontSize: 9,
+    color: colors.textGhost,
     textAlign: 'center',
-    fontSize: 11,
-    color: 'rgba(255,255,255,0.4)',
-    marginVertical: 15,
+    marginVertical: space.md,
   },
-  messageRow: {
-    flexDirection: 'row',
-    marginBottom: 8,
-    alignItems: 'flex-end',
+
+  messageRow: { flexDirection: 'row', alignItems: 'flex-end', gap: space.sm, marginBottom: space.sm },
+  messageRowUser: { justifyContent: 'flex-end' },
+  messageRowAI: { justifyContent: 'flex-start' },
+  avatarSmall: { width: 28, height: 28, borderRadius: radius.sm },
+  avatarEmoji: { fontSize: 13 },
+
+  messageBubble: { maxWidth: '76%', paddingHorizontal: space.md, paddingVertical: 10 },
+  userBubble: {
+    backgroundColor: colors.cyanFaint,
+    borderWidth: 1,
+    borderColor: 'rgba(0,229,255,0.35)',
+    borderRadius: radius.md,
+    borderBottomRightRadius: radius.sharp,
   },
-  messageRowUser: {
-    justifyContent: 'flex-end',
-  },
-  messageRowAI: {
-    justifyContent: 'flex-start',
-  },
-  avatarSmall: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-  },
-  avatarEmoji: {
-    fontSize: 16,
-  },
-  messageBubble: {
-    maxWidth: '75%',
-    borderRadius: 20,
-    overflow: 'hidden',
-  },
-  userBubble: {},
   aiBubble: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    padding: 12,
-    paddingHorizontal: 16,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.hairline,
+    borderRadius: radius.md,
+    borderBottomLeftRadius: radius.sharp,
   },
-  userBubbleGradient: {
-    padding: 12,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    borderBottomRightRadius: 5,
-  },
-  messageText: {
-    color: '#fff',
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  messageTextAI: {
-    color: 'rgba(255,255,255,0.9)',
-    fontSize: 15,
-    lineHeight: 22,
-  },
+  messageText: { ...type.body, color: colors.text },
+  messageTextAI: { ...type.body, color: colors.textMuted },
+
   emptyChat: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 40,
-    paddingTop: 60,
-  },
-  emptyAvatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
     justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 25,
+    paddingHorizontal: space.xl,
+    gap: space.sm,
   },
-  emptyEmoji: {
-    fontSize: 45,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#fff',
-    marginBottom: 10,
-  },
-  emptySubtitle: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.5)',
-    marginBottom: 30,
-  },
-  quickReplies: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 10,
-  },
+  emptyAvatar: { width: 64, height: 64, borderRadius: radius.md, marginBottom: space.sm },
+  emptyEmoji: { fontSize: 28 },
+  emptyTitle: { ...type.title, color: colors.text },
+  emptySubtitle: { ...type.label, fontSize: 10, color: colors.cyan, opacity: 0.6, marginBottom: space.lg },
+
+  quickReplies: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, justifyContent: 'center' },
   quickReply: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: 'rgba(108,99,255,0.3)',
+    borderColor: colors.hairlineStrong,
+    borderRadius: radius.sharp,
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm,
+    backgroundColor: colors.surface,
   },
-  quickReplyText: {
-    color: '#fff',
-    fontSize: 13,
-  },
+  quickReplyText: { ...type.small, color: colors.textMuted },
+
   inputArea: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    padding: 15,
-    backgroundColor: 'rgba(10,10,15,0.95)',
+    gap: space.sm,
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.05)',
-    gap: 10,
+    borderTopColor: colors.hairline,
+    backgroundColor: colors.bg,
   },
   inputContainer: {
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 25,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: colors.hairlineStrong,
+    borderRadius: radius.sm,
+    backgroundColor: colors.surface,
+    paddingHorizontal: space.md,
+    paddingVertical: Platform.OS === 'ios' ? 10 : 4,
     maxHeight: 120,
   },
-  textInput: {
-    color: '#fff',
-    fontSize: 15,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    maxHeight: 100,
-  },
+  textInput: { ...type.body, color: colors.text, padding: 0 },
   sendButton: {
-    borderRadius: 25,
-    overflow: 'hidden',
-  },
-  sendButtonGradient: {
-    width: 50,
-    height: 50,
-    justifyContent: 'center',
+    width: 42,
+    height: 42,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.cyan,
+    backgroundColor: colors.cyanFaint,
     alignItems: 'center',
-  },
-  freeCounter: {
-    flexDirection: 'row',
     justifyContent: 'center',
-    paddingVertical: 6,
-    backgroundColor: 'rgba(108,99,255,0.1)',
   },
-  freeCounterText: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.5)',
-  },
-  freeCounterCta: {
-    fontSize: 12,
-    color: '#9D4EDD',
-    fontWeight: '600',
-  },
+  sendButtonDisabled: { opacity: 0.3 },
 });

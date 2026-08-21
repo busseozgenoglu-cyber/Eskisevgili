@@ -1,19 +1,16 @@
 {
   "expo": {
-    "name": "sanaleskisevgili",
+    "name": "SanalEx",
     "slug": "sanaleskisevgili",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "echo",
+    "scheme": "sanalex",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.sanaleskisevgili.app",
-      "entitlements": {
-        "com.apple.developer.in-app-payments": ["com.sanaleskisevgili.app.premium.monthly"]
-      },
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Profil fotoğrafı seçmek için galeri erişimi",
         "NSCameraUsageDescription": "Profil fotoğrafı çekmek için kamera erişimi",
@@ -23,7 +20,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#0A0A0F"
+        "backgroundColor": "#000000"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.echo.anisohbet",
@@ -47,7 +44,7 @@
           "image": "./assets/images/splash-image.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#0A0A0F"
+          "backgroundColor": "#000000"
         }
       ],
       [
@@ -59,6 +56,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "5f2c845c-5bff-4dda-8e98-51fb2b4ad9a1"
+      }
+    },
+    "owner": "buseozgenoglu"
   }
 }

@@ -16,7 +16,6 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
@@ -24,6 +23,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SORULAR, Soru } from '../constants/sorular';
 import PaywallScreen from './paywall';
 import { getCihazId } from '../utils/cihazId';
+import { colors, type, radius, space, glow } from '../constants/theme';
 
 const { width } = Dimensions.get('window');
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
@@ -256,7 +256,7 @@ export default function AnketScreen() {
       <Modal visible={showPaywall} animationType="slide" presentationStyle="fullScreen">
         <PaywallScreen onClose={handlePaywallClose} onPurchased={handlePurchased} />
       </Modal>
-    <LinearGradient colors={['#0A0A0F', '#1A1A2E']} style={styles.container}>
+    <View style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -268,7 +268,7 @@ export default function AnketScreen() {
               onPress={() => (router.canGoBack() ? router.back() : router.replace('/home'))}
               style={styles.closeButton}
             >
-              <Ionicons name="close" size={24} color="#fff" />
+              <Ionicons name="close" size={22} color={colors.textFaint} />
             </TouchableOpacity>
             <View style={styles.headerCenter}>
               <Text style={styles.kategori}>{currentQuestion.kategori}</Text>
@@ -307,7 +307,7 @@ export default function AnketScreen() {
                     <Image source={{ uri: profilFoto }} style={styles.photoPreview} />
                   ) : (
                     <View style={styles.photoPlaceholder}>
-                      <Ionicons name="camera" size={30} color="rgba(255,255,255,0.5)" />
+                      <Ionicons name="camera" size={26} color={colors.textFaint} />
                       <Text style={styles.photoText}>Fotoğraf Seç</Text>
                     </View>
                   )}
@@ -324,230 +324,143 @@ export default function AnketScreen() {
           <View style={styles.bottomButtons}>
             {currentPage > 0 ? (
               <TouchableOpacity style={styles.prevButton} onPress={goPrev}>
-                <Ionicons name="arrow-back" size={20} color="#fff" />
-                <Text style={styles.prevButtonText}>Geri</Text>
+                <Ionicons name="arrow-back" size={18} color={colors.textMuted} />
+                <Text style={styles.prevButtonText}>GERİ</Text>
               </TouchableOpacity>
             ) : (
               <View style={styles.prevButton} />
             )}
 
             <TouchableOpacity
-              style={styles.nextButton}
+              style={[styles.nextButton, loading && styles.nextButtonDisabled]}
               onPress={currentPage === SORULAR.length - 1 ? handleSubmit : goNext}
               disabled={loading}
+              activeOpacity={0.7}
             >
-              <LinearGradient
-                colors={['#6C63FF', '#9D4EDD']}
-                style={styles.nextButtonGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-              >
-                {loading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <>
-                    <Text style={styles.nextButtonText}>
-                      {currentPage === SORULAR.length - 1 ? 'Tamamla' : 'Devam'}
-                    </Text>
-                    <Ionicons
-                      name={currentPage === SORULAR.length - 1 ? 'checkmark' : 'arrow-forward'}
-                      size={20}
-                      color="#fff"
-                    />
-                  </>
-                )}
-              </LinearGradient>
+              {loading ? (
+                <ActivityIndicator color={colors.cyan} />
+              ) : (
+                <Text style={styles.nextButtonText}>
+                  {currentPage === SORULAR.length - 1 ? 'TAMAMLA' : 'DEVAM'}
+                </Text>
+              )}
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  safeArea: {
-    flex: 1,
-  },
-  keyboardView: {
-    flex: 1,
-  },
+  container: { flex: 1, backgroundColor: colors.bg },
+  safeArea: { flex: 1 },
+  keyboardView: { flex: 1 },
+
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm,
   },
-  closeButton: {
-    width: 48,
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerCenter: {
-    alignItems: 'center',
-  },
-  kategori: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.5)',
-    fontWeight: '500',
-  },
-  pageNumber: {
-    fontSize: 14,
-    color: '#fff',
-    fontWeight: '600',
-    marginTop: 2,
-  },
-  progressContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 10,
-  },
-  progressBg: {
-    height: 6,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
+  closeButton: { padding: space.sm, width: 44 },
+  headerCenter: { alignItems: 'center', gap: 2 },
+  kategori: { ...type.label, color: colors.cyan },
+  pageNumber: { ...type.small, fontSize: 11, color: colors.textGhost },
+
+  progressContainer: { paddingHorizontal: space.md, paddingBottom: space.lg },
+  progressBg: { height: 1, backgroundColor: colors.hairline },
   progressFill: {
-    height: '100%',
-    backgroundColor: '#6C63FF',
-    borderRadius: 3,
+    height: 1,
+    backgroundColor: colors.cyan,
+    shadowColor: colors.cyan,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
   },
-  content: {
-    flex: 1,
-    paddingHorizontal: 25,
-  },
-  question: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginTop: 30,
-    lineHeight: 32,
-  },
-  hint: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.5)',
-    marginTop: 12,
-  },
-  inputWrapper: {
-    marginTop: 40,
-    paddingBottom: 30,
-  },
+
+  content: { flex: 1, paddingHorizontal: space.lg },
+  question: { ...type.title, color: colors.text, marginBottom: space.sm },
+  hint: { ...type.small, color: colors.textFaint, marginBottom: space.lg },
+
+  inputWrapper: { marginTop: space.md, paddingBottom: space.xl },
   inputContainer: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: colors.hairlineStrong,
+    borderRadius: radius.sm,
+    backgroundColor: colors.surface,
+    paddingHorizontal: space.md,
+    paddingVertical: space.md,
   },
-  textInput: {
-    color: '#fff',
-    fontSize: 18,
-    padding: 20,
-  },
-  multilineInput: {
-    minHeight: 120,
-    textAlignVertical: 'top',
-  },
-  optionsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
+  textInput: { ...type.body, color: colors.text, padding: 0 },
+  multilineInput: { minHeight: 100, textAlignVertical: 'top' },
+
+  optionsContainer: { gap: space.sm },
   optionButton: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 30,
-    paddingHorizontal: 20,
-    paddingVertical: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: colors.hairline,
+    borderRadius: radius.sm,
+    backgroundColor: colors.surface,
+    paddingHorizontal: space.md,
+    paddingVertical: space.md,
   },
   optionButtonSelected: {
-    backgroundColor: '#6C63FF',
-    borderColor: '#6C63FF',
+    borderColor: colors.cyan,
+    backgroundColor: colors.cyanFaint,
   },
-  optionText: {
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: 15,
-  },
-  optionTextSelected: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-  emojiOption: {
-    fontSize: 22,
-  },
-  photoSection: {
-    marginTop: 30,
-    alignItems: 'center',
-  },
-  photoLabel: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.5)',
-    marginBottom: 15,
-  },
-  photoButton: {
+  optionText: { ...type.body, color: colors.textMuted },
+  optionTextSelected: { color: colors.cyan, fontWeight: '600' },
+  emojiOption: { fontSize: 24 },
+
+  photoSection: { marginTop: space.lg, gap: space.sm },
+  photoLabel: { ...type.small, color: colors.textFaint },
+  photoButton: { alignSelf: 'flex-start' },
+  photoPlaceholder: {
     width: 100,
     height: 100,
-    borderRadius: 50,
-    overflow: 'hidden',
-  },
-  photoPlaceholder: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    justifyContent: 'center',
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.hairlineStrong,
+    borderStyle: 'dashed',
+    backgroundColor: colors.surface,
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
   },
-  photoPreview: {
-    width: '100%',
-    height: '100%',
-  },
-  photoText: {
-    fontSize: 11,
-    color: 'rgba(255,255,255,0.5)',
-    marginTop: 5,
-  },
+  photoPreview: { width: 100, height: 100, borderRadius: radius.sm },
+  photoText: { ...type.small, fontSize: 11, color: colors.textFaint },
+
   bottomButtons: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 20,
-    gap: 15,
+    alignItems: 'center',
+    gap: space.sm,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.hairline,
   },
   prevButton: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 6,
     paddingVertical: 16,
-    borderRadius: 30,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    gap: 8,
+    paddingHorizontal: space.md,
+    minWidth: 96,
   },
-  prevButtonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
+  prevButtonText: { ...type.label, color: colors.textMuted },
   nextButton: {
-    flex: 2,
-    borderRadius: 30,
-    overflow: 'hidden',
-  },
-  nextButtonGradient: {
-    flexDirection: 'row',
+    flex: 1,
+    borderWidth: 1,
+    borderColor: colors.cyan,
+    borderRadius: radius.sharp,
+    backgroundColor: colors.cyanFaint,
+    paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
-    gap: 8,
+    ...glow(colors.cyan, 10),
   },
-  nextButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  nextButtonDisabled: { opacity: 0.45 },
+  nextButtonText: { ...type.label, color: colors.cyan },
 });
