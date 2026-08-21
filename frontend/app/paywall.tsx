@@ -12,7 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as Linking from 'expo-linking';
-import RNIap, {
+import {
   initConnection,
   getSubscriptions,
   requestSubscription,
@@ -36,10 +36,11 @@ export default function PaywallScreen({ onClose, onPurchased }: Props) {
   const [loading, setLoading] = useState(false);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [fetchingProducts, setFetchingProducts] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => {
     let mounted = true;
-    initIAP(mounted);
+    initIAP(() => mounted);
     // Note: intentionally not calling endConnection() here. The IAP
     // connection is shared with useSubscription()'s listeners for the
     // lifetime of the app; tearing it down when this screen unmounts
@@ -49,21 +50,43 @@ export default function PaywallScreen({ onClose, onPurchased }: Props) {
     };
   }, []);
 
-  const initIAP = async (mounted: boolean) => {
-    try {
-      await initConnection();
-      const subs = await getSubscriptions({ skus: [PRODUCT_ID] });
-      if (mounted && subs.length > 0) {
-        setSubscription(subs[0] as Subscription);
+  // StoreKit can be slow or briefly unavailable right after launch. Retry a
+  // few times rather than leaving the screen in a state where the buy button
+  // is tappable but no product is loaded - that combination is what makes a
+  // purchase attempt fail outright.
+  const initIAP = async (isMounted: () => boolean) => {
+    setFetchingProducts(true);
+    setLoadFailed(false);
+
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        await initConnection();
+        const subs = await getSubscriptions({ skus: [PRODUCT_ID] });
+        if (!isMounted()) return;
+        if (subs.length > 0) {
+          setSubscription(subs[0] as Subscription);
+          setFetchingProducts(false);
+          return;
+        }
+      } catch (err) {
+        console.warn(`IAP init attempt ${attempt + 1} failed:`, err);
       }
-    } catch (err) {
-      console.warn('IAP init error:', err);
-    } finally {
-      if (mounted) setFetchingProducts(false);
+      if (!isMounted()) return;
+      await new Promise(r => setTimeout(r, 1200 * (attempt + 1)));
     }
+
+    if (!isMounted()) return;
+    setFetchingProducts(false);
+    setLoadFailed(true);
   };
 
   const handlePurchase = async () => {
+    // Without a loaded product StoreKit has nothing to charge against, so the
+    // request would fail; send the user to retry instead.
+    if (!subscription) {
+      initIAP(() => true);
+      return;
+    }
     setLoading(true);
     try {
       await requestSubscription({ sku: PRODUCT_ID });
@@ -101,7 +124,7 @@ export default function PaywallScreen({ onClose, onPurchased }: Props) {
     else router.replace('/home');
   };
 
-  const priceStr = (subscription as any)?.localizedPrice ?? '₺239,99';
+  const localizedPrice = (subscription as any)?.localizedPrice as string | undefined;
 
   return (
     <View style={styles.root}>
@@ -133,7 +156,9 @@ export default function PaywallScreen({ onClose, onPurchased }: Props) {
           <View style={styles.planBox}>
             <Text style={styles.planBadge}>7 GÜN ÜCRETSİZ</Text>
             <Text style={styles.planName}>Premium Haftalık</Text>
-            <Text style={styles.planPrice}>{priceStr} / hafta</Text>
+            <Text style={styles.planPrice}>
+              {localizedPrice ? `${localizedPrice} / hafta` : 'Fiyat yükleniyor…'}
+            </Text>
             <Text style={styles.planTerms}>
               Süre: 1 hafta. Deneme sonunda otomatik yenilenir, dilediğin zaman
               App Store ayarlarından iptal edebilirsin.
@@ -149,9 +174,18 @@ export default function PaywallScreen({ onClose, onPurchased }: Props) {
             {loading ? (
               <ActivityIndicator color={colors.cyan} />
             ) : (
-              <Text style={styles.ctaText}>ERİŞİMİ AÇ</Text>
+              <Text style={styles.ctaText}>
+                {loadFailed ? 'TEKRAR DENE' : 'ERİŞİMİ AÇ'}
+              </Text>
             )}
           </TouchableOpacity>
+
+          {loadFailed && (
+            <Text style={styles.loadError}>
+              App Store'a şu anda ulaşılamıyor. İnternet bağlantını kontrol edip
+              tekrar dene.
+            </Text>
+          )}
 
           <TouchableOpacity onPress={handleRestore} style={styles.restore} hitSlop={8}>
             <Text style={styles.restoreText}>Satın alımı geri yükle</Text>
@@ -221,6 +255,13 @@ const styles = StyleSheet.create({
     ...glow(colors.cyan, 12),
   },
   ctaDisabled: { opacity: 0.45 },
+  loadError: {
+    ...type.small,
+    fontSize: 12,
+    color: colors.danger,
+    textAlign: 'center',
+    marginTop: space.sm,
+  },
   ctaText: { ...type.label, color: colors.cyan },
 
   restore: { paddingVertical: space.md, alignItems: 'center' },
