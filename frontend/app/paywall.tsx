@@ -136,8 +136,9 @@ export default function PaywallScreen({ onClose, onPurchased }: Props) {
             style={styles.priceBlock}
           >
             <Text style={styles.trialBadge}>7 GÜN ÜCRETSİZ</Text>
+            <Text style={styles.subscriptionTitle}>Premium Haftalık</Text>
             <Text style={styles.priceText}>{priceStr}/hafta</Text>
-            <Text style={styles.priceSub}>Deneme bittikten sonra ücretlendirilirsin</Text>
+            <Text style={styles.priceSub}>Süre: 1 hafta · Deneme bittikten sonra otomatik olarak yenilenir ve ücretlendirilirsin</Text>
           </LinearGradient>
 
           <TouchableOpacity onPress={handlePurchase} disabled={loading || fetchingProducts} activeOpacity={0.85}>
@@ -159,11 +160,11 @@ export default function PaywallScreen({ onClose, onPurchased }: Props) {
           </Text>
 
           <View style={styles.legalLinks}>
-            <TouchableOpacity onPress={() => Linking.openURL('https://cdn.jsdelivr.net/gh/busseozgenoglu-cyber/Eskisevgili@main/docs/privacy.html')}>
+            <TouchableOpacity onPress={() => Linking.openURL('https://busseozgenoglu-cyber.github.io/Eskisevgili/privacy.html')}>
               <Text style={styles.legalLink}>Gizlilik Politikası</Text>
             </TouchableOpacity>
             <Text style={styles.legalLinkSeparator}>·</Text>
-            <TouchableOpacity onPress={() => Linking.openURL('https://cdn.jsdelivr.net/gh/busseozgenoglu-cyber/Eskisevgili@main/docs/privacy.html#terms')}>
+            <TouchableOpacity onPress={() => Linking.openURL('https://busseozgenoglu-cyber.github.io/Eskisevgili/privacy.html#terms')}>
               <Text style={styles.legalLink}>Kullanım Şartları</Text>
             </TouchableOpacity>
           </View>
@@ -188,6 +189,7 @@ const styles = StyleSheet.create({
   featureText: { fontSize: 16, color: '#fff', fontWeight: '500' },
   priceBlock: { width: '100%', borderRadius: 16, padding: 20, alignItems: 'center', marginBottom: 24, borderWidth: 1, borderColor: 'rgba(108,99,255,0.3)' },
   trialBadge: { fontSize: 12, fontWeight: '700', color: '#9D4EDD', letterSpacing: 1, marginBottom: 8 },
+  subscriptionTitle: { fontSize: 15, fontWeight: '600', color: '#fff', marginBottom: 4 },
   priceText: { fontSize: 28, fontWeight: '700', color: '#fff', marginBottom: 6 },
   priceSub: { fontSize: 12, color: 'rgba(255,255,255,0.4)' },
   purchaseBtn: { width: 300, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
