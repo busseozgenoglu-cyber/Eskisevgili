@@ -60,3 +60,11 @@ export const glow = (color: string = colors.cyan, radiusPx = 18) => ({
   shadowRadius: radiusPx,
   elevation: 12,
 });
+
+// Text needs the textShadow* family; the view shadow props above paint a
+// rectangular halo behind the glyph box instead of following the letters.
+export const textGlow = (color: string = colors.cyan, radiusPx = 16) => ({
+  textShadowColor: color,
+  textShadowOffset: { width: 0, height: 0 },
+  textShadowRadius: radiusPx,
+});

@@ -10,13 +10,13 @@ import {
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SanalExMark from '../components/SanalExMark';
-import { colors, type, radius, space, glow } from '../constants/theme';
+import { colors, type, radius, space, glow, textGlow } from '../constants/theme';
 
 export default function OnboardingScreen() {
   const router = useRouter();
   const fade = useRef(new Animated.Value(0)).current;
   const rise = useRef(new Animated.Value(24)).current;
-  const pulse = useRef(new Animated.Value(0.45)).current;
+  const pulse = useRef(new Animated.Value(0.8)).current;
 
   useEffect(() => {
     Animated.parallel([
@@ -43,7 +43,7 @@ export default function OnboardingScreen() {
           useNativeDriver: true,
         }),
         Animated.timing(pulse, {
-          toValue: 0.45,
+          toValue: 0.8,
           duration: 2200,
           easing: Easing.inOut(Easing.quad),
           useNativeDriver: true,
@@ -61,11 +61,12 @@ export default function OnboardingScreen() {
           {/* Artwork carries the wordmark, so no separate SANALEX label here. */}
           <SanalExMark size={64} style={styles.brandLogo} />
 
+          {/* Question in white, answer in cyan - the payoff line is the hook. */}
           <View style={styles.headline}>
-            <Text style={styles.headlineText}>Geçmiş bazen</Text>
-            <Text style={styles.headlineText}>geri dönmez.</Text>
+            <Text style={styles.headlineText}>Onunla bir daha</Text>
+            <Text style={styles.headlineText}>konuşabilseydin?</Text>
             <Animated.Text style={[styles.headlineAccent, { opacity: pulse }]}>
-              Konuşur.
+              Konuşabilirsin.
             </Animated.Text>
           </View>
 
@@ -89,8 +90,12 @@ export default function OnboardingScreen() {
             <Text style={styles.ctaText}>BAŞLAT</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => router.replace('/home')} style={styles.ghost}>
-            <Text style={styles.ghostText}>Mevcut kayıtlarım</Text>
+          <TouchableOpacity
+            onPress={() => router.replace('/home')}
+            style={styles.secondary}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.secondaryText}>MEVCUT KAYITLARIM</Text>
           </TouchableOpacity>
         </Animated.View>
       </SafeAreaView>
@@ -116,7 +121,7 @@ const styles = StyleSheet.create({
 
   headline: { marginBottom: space.md },
   headlineText: { ...type.display, color: colors.text },
-  headlineAccent: { ...type.display, color: colors.cyan, ...glow(colors.cyan, 14) },
+  headlineAccent: { ...type.display, color: colors.cyan, ...textGlow(colors.cyan, 18) },
 
   sub: { ...type.small, color: colors.textFaint, fontStyle: 'italic' },
 
@@ -142,6 +147,15 @@ const styles = StyleSheet.create({
     ...glow(colors.cyan, 12),
   },
   ctaText: { ...type.label, color: colors.cyan },
-  ghost: { paddingVertical: space.md, alignItems: 'center' },
-  ghostText: { ...type.small, color: colors.textFaint },
+  // Returning users need to find this without hunting, so it reads as a real
+  // button - neutral border keeps the cyan CTA as the clear primary.
+  secondary: {
+    borderWidth: 1,
+    borderColor: colors.hairlineStrong,
+    borderRadius: radius.sharp,
+    paddingVertical: 16,
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+  },
+  secondaryText: { ...type.label, color: colors.text },
 });

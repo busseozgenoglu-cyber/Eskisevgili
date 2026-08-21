@@ -37,3 +37,9 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+# local env (backend URL for local runs)
+.env
+
+# metro bundler cache
+.metro-cache/
