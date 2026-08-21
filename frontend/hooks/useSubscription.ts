@@ -1,9 +1,11 @@
 import { useEffect, useState, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
+  initConnection,
   purchaseUpdatedListener,
   purchaseErrorListener,
   finishTransaction,
+  getAvailablePurchases,
   Purchase,
 } from 'react-native-iap';
 
@@ -17,6 +19,7 @@ export function useSubscription() {
 
   useEffect(() => {
     loadState();
+    verifyEntitlement();
     const purchaseUpdateSub = purchaseUpdatedListener(handlePurchase);
     const purchaseErrorSub = purchaseErrorListener(() => {});
     return () => {
@@ -31,6 +34,34 @@ export function useSubscription() {
       setIsPremium(premium === 'true');
     } finally {
       setInitialized(true);
+    }
+  };
+
+  // Cached flag is only ever set to 'true' on purchase, so a lapsed/cancelled
+  // subscription would otherwise grant access forever. Re-check the real
+  // entitlement against StoreKit whenever we can reach it.
+  const verifyEntitlement = async () => {
+    try {
+      await initConnection();
+      const purchases = await getAvailablePurchases();
+      const active = purchases.find((p: Purchase) => {
+        if (p.productId !== PRODUCT_ID) return false;
+        const expiry = (p as any).expirationDateIos;
+        return !expiry || expiry > Date.now();
+      });
+
+      if (active) {
+        await AsyncStorage.setItem(PREMIUM_KEY, 'true');
+        setIsPremium(true);
+      } else if (purchases.some((p: Purchase) => p.productId === PRODUCT_ID)) {
+        // We saw a transaction for this product but it's expired.
+        await AsyncStorage.removeItem(PREMIUM_KEY);
+        setIsPremium(false);
+      }
+      // If StoreKit returned nothing at all (e.g. offline), keep the cached
+      // flag as-is rather than punishing the user for a network hiccup.
+    } catch (err) {
+      console.warn('Entitlement check failed:', err);
     }
   };
 

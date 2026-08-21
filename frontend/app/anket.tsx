@@ -246,10 +246,9 @@ export default function AnketScreen() {
 
   const handlePaywallClose = () => {
     setShowPaywall(false);
-    // Allow limited access even without subscription
-    if (pendingChatId) {
-      router.replace(`/chat/${pendingChatId}`);
-    }
+    // Chatting is the paid feature - closing the paywall without
+    // purchasing sends the user to their profile list, not into the chat.
+    router.replace('/home');
   };
 
   return (

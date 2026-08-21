@@ -12,6 +12,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Keyboard,
+  Modal,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,6 +24,7 @@ import { tr } from 'date-fns/locale';
 import { Audio } from 'expo-av';
 import { useSubscription } from '../../hooks/useSubscription';
 import { getCihazId } from '../../utils/cihazId';
+import PaywallScreen from '../paywall';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -61,7 +63,8 @@ export default function ChatScreen() {
   const [typing, setTyping] = useState(false);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [isRecording, setIsRecording] = useState(false);
-  const { isPremium } = useSubscription();
+  const { isPremium, initialized: subscriptionInitialized } = useSubscription();
+  const [showPaywall, setShowPaywall] = useState(false);
 
   useEffect(() => {
     if (kisiId) {
@@ -98,6 +101,11 @@ export default function ChatScreen() {
   const sendMessage = async (overrideText?: string) => {
     const kaynakMetin = overrideText ?? inputText;
     if (!kaynakMetin.trim() || sending || !kisiId) return;
+
+    if (subscriptionInitialized && !isPremium) {
+      setShowPaywall(true);
+      return;
+    }
 
     const mesaj = kaynakMetin.trim();
     setInputText('');
@@ -278,6 +286,16 @@ export default function ChatScreen() {
   }
 
   return (
+    <>
+      <Modal visible={showPaywall} animationType="slide" presentationStyle="fullScreen">
+        <PaywallScreen
+          onClose={() => {
+            setShowPaywall(false);
+            router.replace('/home');
+          }}
+          onPurchased={() => setShowPaywall(false)}
+        />
+      </Modal>
     <LinearGradient colors={['#0A0A0F', '#1A1A2E']} style={styles.container}>
 <SafeAreaView style={styles.safeArea} edges={['top']}>
         {/* Header */}
@@ -366,6 +384,7 @@ export default function ChatScreen() {
         </KeyboardAvoidingView>
       </SafeAreaView>
     </LinearGradient>
+    </>
   );
 }
 

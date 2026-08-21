@@ -15,7 +15,6 @@ import { useRouter } from 'expo-router';
 import * as Linking from 'expo-linking';
 import RNIap, {
   initConnection,
-  endConnection,
   getSubscriptions,
   requestSubscription,
   getAvailablePurchases,
@@ -38,9 +37,12 @@ export default function PaywallScreen({ onClose, onPurchased }: Props) {
   useEffect(() => {
     let mounted = true;
     initIAP(mounted);
+    // Note: intentionally not calling endConnection() here. The IAP
+    // connection is shared with useSubscription()'s listeners for the
+    // lifetime of the app; tearing it down when this screen unmounts
+    // would kill purchase-update delivery app-wide.
     return () => {
       mounted = false;
-      endConnection();
     };
   }, []);
 
