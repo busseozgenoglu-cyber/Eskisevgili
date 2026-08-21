@@ -58,10 +58,8 @@ export default function OnboardingScreen() {
         <Animated.View
           style={[styles.content, { opacity: fade, transform: [{ translateY: rise }] }]}
         >
-          <View style={styles.brandRow}>
-            <SanalExMark size={34} />
-            <Text style={styles.brand}>SANALEX</Text>
-          </View>
+          {/* Artwork carries the wordmark, so no separate SANALEX label here. */}
+          <SanalExMark size={64} style={styles.brandLogo} />
 
           <View style={styles.headline}>
             <Text style={styles.headlineText}>Geçmiş bazen</Text>
@@ -114,8 +112,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1, justifyContent: 'space-between', paddingHorizontal: space.lg },
   content: { flex: 1, justifyContent: 'center' },
 
-  brandRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginBottom: space.xl },
-  brand: { ...type.label, color: colors.cyan },
+  brandLogo: { marginBottom: space.xl },
 
   headline: { marginBottom: space.md },
   headlineText: { ...type.display, color: colors.text },
